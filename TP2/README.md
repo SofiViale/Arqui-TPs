@@ -5,6 +5,11 @@ en registros, calcula con la ALU original del TP1 y transmite automáticamente
 un byte de resultado. Esta etapa contiene fuentes y bancos de simulación para
 trabajar desde la terminal de Visual Studio Code.
 
+También está disponible la [calculadora de escritorio en Python](pc/README.md),
+con teclado numérico y botones para las ocho operaciones de la ALU. Se inicia con
+`python TP2/pc/calculator.py` desde la raíz y utiliza el mismo protocolo a 9600
+baud. La prueba física requiere programar previamente la FPGA.
+
 **Estado de validación:** implementación y testbenches preparados. Se intentó
 ejecutar la batería el 13/09/2026, pero no están disponibles `iverilog`, `vvp`
 ni Yosys en este entorno. Las simulaciones y la comprobación estructural están
@@ -37,6 +42,13 @@ repositorio/
     │   └── tp2_top_tb.v
     ├── scripts/
     │   └── simulate.py
+    ├── pc/                            # Calculadora Python y sus pruebas
+    │   ├── calculator.py
+    │   ├── protocol.py
+    │   ├── serial_client.py
+    │   ├── requirements.txt
+    │   ├── README.md
+    │   └── tests/test_calculator.py
     └── build/                         # Generado por el script; ignorado por Git
         └── results.json               # Estado real de la última ejecución
 ```

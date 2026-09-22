@@ -1,1 +1,4 @@
 /TP2/build/
+/TP2/pc/__pycache__/
+/TP2/pc/tests/__pycache__/
+/TP2/pc/.venv/
