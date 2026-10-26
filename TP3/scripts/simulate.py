@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Simula los bloques de TP3 con Icarus, desde cualquier directorio."""
+"""Simula bloques y pipeline aritmetico de TP3 desde cualquier directorio."""
 import argparse
 import json
 from pathlib import Path
@@ -16,6 +16,8 @@ BENCHES = {
     "register_file_tb": ["register_file.v"],
     "state_tb": ["state.v"],
     "memory_tb": ["imem.v", "dmem.v"],
+    "pipeline_tb": ["core.v", "arithmetic_system.v", "state.v", "imem.v",
+                    "decoder.v", "immediate.v", "register_file.v", "alu_adapter.v"],
 }
 
 
@@ -36,7 +38,10 @@ def commands(compiler, runtime, bench):
                    "-I", str(TP3 / "rtl"), "-I", str(TP3 / "tb"),
                    "-s", bench, "-o", str(output)]
     compile_cmd += [str(p) for p in sources + [TP3 / "tb" / (bench + ".v")]]
-    return compile_cmd, [runtime, str(output)]
+    simulate_cmd = [runtime, str(output)]
+    if bench == "pipeline_tb":
+        simulate_cmd.append("+TRACE=" + str(BUILD / "pipeline_trace.csv"))
+    return compile_cmd, simulate_cmd
 
 
 def run(command, log, quiet=False):
@@ -58,13 +63,20 @@ def run(command, log, quiet=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bench", choices=BENCHES)
+    parser.add_argument("--stage", choices=["1", "2"], help="Filtrar etapa de desarrollo")
     parser.add_argument("--iverilog")
     parser.add_argument("--vvp")
     parser.add_argument("--list", action="store_true")
     args = parser.parse_args()
+    if args.bench and args.stage:
+        parser.error("usar --bench o --stage, no ambos")
     compiler = resolve_tool(args.iverilog, "iverilog")
     runtime = resolve_tool(args.vvp, "vvp")
     benches = [args.bench] if args.bench else list(BENCHES)
+    if args.stage == "1":
+        benches = [name for name in BENCHES if name != "pipeline_tb"]
+    elif args.stage == "2":
+        benches = ["pipeline_tb"]
     if args.list:
         for bench in benches:
             for command in commands(compiler or args.iverilog or "iverilog",
@@ -86,7 +98,9 @@ def main():
             code, output = run(simulate_cmd, BUILD / (bench + ".log"))
             passed = code == 0 and f"PASS: {bench}" in output and "FAIL" not in output
             results[bench] = "PASS" if passed else "FAIL: simulacion"
-    (BUILD / "results.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
+    report = (f"results_{args.bench}.json" if args.bench else
+              f"results_stage_{args.stage}.json" if args.stage else "results.json")
+    (BUILD / report).write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(results, indent=2))
     return 0 if all(value == "PASS" for value in results.values()) else 1
 

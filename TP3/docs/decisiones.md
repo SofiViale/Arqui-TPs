@@ -1,6 +1,8 @@
-# Registro de decisiones — etapa 1
+# Registro de decisiones — etapas 1 y 2
 
-Fecha de inspección e implementación: 7 de octubre de 2026.
+Inspección e implementación de etapa 1: 7 de octubre de 2026.
+Integración de etapa 2: 23 de octubre de 2026. El inventario y fuentes de abajo
+documentan la inspección original; las nuevas decisiones se agregan al final.
 
 ## Fuentes y alcance de la inspección
 
@@ -112,3 +114,24 @@ Setup/hold, camino crítico, skew y utilización se medirán en etapa 6. El reta
 de lógica entre registros no es el skew (diferencia de llegada del reloj).
 Si hiciera falta otra frecuencia, se justificará con implementación Vivado y se
 recalculará el divisor de UART; no se relajarán restricciones para ocultar errores.
+
+## Decisiones de etapa 2 — 23/10/2026
+
+| Tema | Decisión y motivo |
+|---|---|
+| Separación núcleo/IMEM | `tp3_core` recibe instrucción combinacional; `tp3_arithmetic_system` lo conecta a IMEM y al puerto lógico de carga. Facilita sustituir la integración de laboratorio por la Debug Unit sin mezclar transporte y ejecución. |
+| Buses reales | Se implementan 64/196/141/103 bits más valid, según la propuesta de etapa 1. Se conservan campos previstos de memoria/saltos; no se agrega lógica para ejecutarlos. |
+| Resultado uniforme | EX selecciona ALU o inmediato U para LUI. MEM transporta y WB escribe el dato final, conservando PC, instrucción y rd. |
+| Admisión aritmética | Se usan controles del decoder existente, sin otra tabla. Ilegal o instrucción futura se reportan en ID y no se admiten como válidas en EX. El error no detiene automáticamente el núcleo: ese control sigue pendiente. |
+| Prueba finita | Entrada externa fetch_enable; el testbench conoce el número de palabras y deja de buscar al llegar al final. Cuatro ciclos más drenan la secuencia. No se almacena longitud ni se implementa HALT/RUN/STEP. |
+| Pausa | core_enable llega al PC, cuatro registros y escritura del banco. Se incluye reset y protección x0 en la habilitación de WB. El bypass WB/ID queda condicionado por esa misma escritura. |
+| Carga de laboratorio | Se acepta en posedge solo con núcleo deshabilitado, pipeline vacío, sin reset y dirección válida. Es un interlock combinacional; no un loader UART ni un protocolo de reprogramación. |
+| Dependencias | No se implementa forwarding/stall. Dos NOP permiten coincidir WB e ID gracias al bypass existente; la prueba pausa también en esa coincidencia. Los programas finales deberán resolver riesgos por hardware en etapa 3. |
+| Observación | Salidas crudas de los cuatro buses, valid, PC, debug de banco y evento WB. La traza CSV muestra PC/instrucción/valid por etapa; no es un serializador de snapshots. |
+| Evidencia | Scoreboard de resultados literales y cola de instrucciones por ciclo; compara los 32 registros después de cada flanco de prueba. Regresión completa, sin nuevas dependencias de software. |
+
+El reset del wrapper limpia PC/banco/pipeline y conserva IMEM; además bloquea
+carga mientras está activo. Las políticas de comandos, DMEM y reprogramación de
+la sección anterior siguen siendo propuestas para etapas futuras. Los cuatro
+flush de integración están fijados a cero: su uso para riesgos/saltos es futuro.
+No se modificaron TP1/TP2 ni se añadieron restricciones/pines de placa.

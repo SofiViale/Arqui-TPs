@@ -33,4 +33,9 @@
 `define TP3_BR_JAL  3'd3
 `define TP3_BR_JALR 3'd4
 `define TP3_HALT 32'h00100073
+// Payloads del pipeline (valid viaja por un puerto separado).
+`define TP3_IF_ID_WIDTH 64
+`define TP3_ID_EX_WIDTH 196
+`define TP3_EX_MEM_WIDTH 141
+`define TP3_MEM_WB_WIDTH 103
 `endif

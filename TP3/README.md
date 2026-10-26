@@ -1,20 +1,23 @@
-# TP3 — Procesador educativo: etapa 1
+# TP3 — Procesador educativo: etapas 1 y 2
 
-La **etapa 1 está completada en simulación RTL**. Hay bloques reutilizables,
-interfaces documentadas y pruebas automáticas. Todavía no hay un procesador
-ejecutable. El objetivo final es un procesador de 32 bits con pipeline de cinco
+Las **etapas 1 y 2 están completadas en simulación RTL**. Hay bloques reutilizables
+y un pipeline aritmético ejecutable de cinco etapas, con pruebas automáticas.
+La explicación de la nueva entrega está en el **[README de etapa 2](README_etapa_2.md)**:
+recorrido por ciclos, pausa/reset, dependencias, carga provisional y lectura de trazas.
+El objetivo final es un procesador de 32 bits con pipeline de cinco
 etapas, memorias separadas y una Debug Unit por UART que permita programar,
 ejecutar y observar el estado desde una PC.
 
 Se implementa el subconjunto de la consigna, no RV32I completo. El decoder
-reconoce sus 32 instrucciones y la convención educativa HALT; reconocer una
-carga o un salto no significa que ya se ejecute. No hay forwarding, control de
+reconoce sus 32 instrucciones y la convención educativa HALT. El núcleo de etapa 2
+ejecuta las 20 operaciones R/I aritméticas y LUI, con dependencias suficientemente
+separadas. Reconocer una carga o un salto no significa ejecutarlo. No hay forwarding, control de
 saltos, RUN/STEP, loader, protocolo UART nuevo ni aplicación del procesador.
 
 | Etapa de desarrollo | Estado |
 |---|---|
 | 1. Diseño, adaptación de ALU y bloques básicos | Completada: 5 bancos, 6.637 comprobaciones aprobadas |
-| 2. Pipeline aritmético | Pendiente |
+| 2. Pipeline aritmético | Completada: 15.380 comprobaciones, traza por ciclo y regresión de etapa 1 aprobada |
 | 3. Memoria y dependencias de datos | Pendiente |
 | 4. Saltos, paso a paso y parada | Pendiente |
 | 5. UART, Debug Unit y aplicación | Pendiente |
@@ -29,6 +32,7 @@ pipeline. El [plan completo](docs/plan_etapas.md) fija la aceptación de cada un
 TP3/
   .gitignore                     excluye build y caches de Python
   README.md                      punto de entrada
+  README_etapa_2.md               explicación del pipeline integrado y su uso
   rtl/
     tp3_defs.vh                  códigos internos comunes
     alu_adapter.v                instancia ALU TP1 + SLL/SLT/SLTU
@@ -38,6 +42,8 @@ TP3/
     state.v                      PC y registro genérico con valid
     imem.v                       memoria reprogramable por puerto lógico
     dmem.v                       memoria con máscara de bytes y debug
+    core.v                       núcleo aritmético IF/ID/EX/MEM/WB
+    arithmetic_system.v          IMEM + núcleo, carga lógica de laboratorio
   tb/
     check.vh                     assertions y timeout común
     alu_tb.v                     aritmética adaptada
@@ -45,12 +51,14 @@ TP3/
     register_file_tb.v           banco completo y bypass
     state_tb.v                   PC y registros de 7/73 bits
     memory_tb.v                  IMEM/DMEM, profundidades 1/3/256
+    pipeline_tb.v                secuencias aritméticas, pausa/reset y traza
   scripts/simulate.py            compilación/simulación y resultados
   docs/
     arquitectura.md              diagrama, puertos, controles y buses futuros
     decisiones.md                fuentes, inventario y elecciones justificadas
     plan_etapas.md               seis etapas y criterios de aceptación
     verificacion_etapa_1.md       evidencia y límites de la validación
+    verificacion_etapa_2.md       cobertura y resultados de la integración
   build/                         generado e ignorado: logs, vvp, results.json
 ```
 
@@ -73,32 +81,34 @@ El inventario de interfaces reales está en [decisiones](docs/decisiones.md).
 
 ```mermaid
 flowchart LR
-    P[PC + IMEM] -.-> F[IF/ID]
-    F -.-> D[Decoder + inmediato + banco]
-    D -.-> I[ID/EX]
-    I -.-> A[ALU adaptada]
-    A -.-> E[EX/MEM]
-    E -.-> M[Interfaz load/store]
-    M -.-> RAM[DMEM]
-    RAM -.-> W[MEM/WB + selector WB]
-    W -.-> D
+    P[PC + IMEM] --> F[IF/ID]
+    F --> D[Decoder + inmediato + banco]
+    D --> I[ID/EX]
+    I --> A[ALU adaptada o LUI]
+    A --> E[EX/MEM]
+    E --> W[MEM/WB + escritura WB]
+    W --> D
+    E -.-> M[Interfaz load/store pendiente]
+    M -.-> RAM[DMEM desconectada]
+    RAM -.-> W
     U[UART TP2 + Debug Unit + PC externa] -.-> P
     U -.-> D
     U -.-> RAM
     classDef ready fill:#ddf5e3,stroke:#24753b;
     classDef future fill:#fff1d6,stroke:#936200,stroke-dasharray:5 5;
-    class P,D,A,RAM ready;
-    class F,I,E,M,W,U future;
+    class P,D,A,RAM,F,I,E,W ready;
+    class M,U future;
 ```
 
-Verde: bloques de etapa 1. Naranja: conexiones y subsistemas pendientes (la UART
-ya existe en TP2, falta integrarla). Todas las flechas son futuras. El registro
-genérico ya existe, pero las cuatro instancias concretas todavía no se conectan.
+Verde: bloques implementados. Flechas continuas: integración de etapa 2.
+Naranja y flechas punteadas: subsistemas/conexiones pendientes (la UART existe
+en TP2 y DMEM está probada como bloque, pero no están conectadas al núcleo).
+Las cuatro instancias concretas del registro genérico ya forman el pipeline.
 El [diagrama y contratos detallados](docs/arquitectura.md) incluyen debug y saltos.
 
 El **PC** almacena la dirección de búsqueda; recibe `next_pc` y solo cambia con
 enable o reset en un flanco positivo. Arranca en cero al resetear, parametrizable.
-El cálculo PC+4 y el selector de saltos serán parte de la integración.
+La integración de etapa 2 ya calcula PC+4; el selector de saltos sigue pendiente.
 
 El **decoder** transforma los bits de la instrucción en campos y controles.
 `uses_rs1/uses_rs2` indican qué fuentes realmente se necesitan: los bits de un
@@ -118,9 +128,10 @@ Reset síncrono limpia todos los registros y desactiva bypass mientras está alt
 **Valid** distingue una instrucción real de una burbuja. **Enable** permite
 capturar el siguiente estado; sin él se mantiene. **Flush** limpia datos y valid,
 con prioridad sobre enable. Reset tiene prioridad máxima. Son registros por
-flanco, no latches transparentes. En el núcleo futuro, flush debe condicionarse
-por el avance global, y las escrituras en banco/DMEM también por enable y valid.
-Pausar solo los registros intermedios no alcanzaría.
+flanco, no latches transparentes. El núcleo ya condiciona la escritura del banco
+por enable y valid. Los flush están inactivos en etapa 2; al agregar saltos deben
+condicionarse por el avance global. Las escrituras futuras de DMEM también deben
+respetar pausa y validez. Pausar solo los registros intermedios no alcanzaría.
 
 ## Control por familia
 
@@ -140,7 +151,9 @@ lectura de memoria y escritura de memoria, antes de aplicar valid/enable.
 | lui | Ninguna | U | Inmediato | 1/0/0 |
 | HALT / ilegal | Ninguna | Ninguno | No escribe | 0/0/0 |
 
-La [tabla completa](docs/arquitectura.md#controles-del-decoder) especifica
+La tabla describe el decoder completo; el núcleo actual admite solo R/I
+aritméticas y LUI. Las demás activan diagnóstico y se invalidan después de ID,
+sin parada automática. La [tabla completa](docs/arquitectura.md#controles-del-decoder) especifica
 selectores, ALU, tamaño signed/unsigned y clasificación de saltos. Solo la palabra
 **`0x00100073` (EBREAK)** activa `is_halt`. HALT es un alias educativo propuesto,
 no una instrucción HALT estándar. ECALL es ilegal en este subconjunto. El
@@ -157,6 +170,8 @@ una lectura inválida devuelve cero con error y una escritura inválida se ignor
 
 Las lecturas son combinacionales; las escrituras ocurren en posedge con enable.
 IMEM ofrece carga de palabras desde testbench ahora, loader UART después.
+El wrapper aritmético acepta esa carga solo con núcleo deshabilitado, pipeline
+vacío, reset inactivo y dirección válida; reset conserva IMEM.
 DMEM ofrece máscara de cuatro bytes y un puerto debug independiente. El bit 0
 de máscara modifica bits 7:0: es little-endian. Máscara 0000 no escribe. La
 selección/extensión de loads y el desplazamiento de stores pertenecen a etapa 3.
@@ -179,6 +194,8 @@ Desde la raíz, en PowerShell o en un shell con Python 3:
 
 ```powershell
 python TP3/scripts/simulate.py
+python TP3/scripts/simulate.py --stage 2
+python TP3/scripts/simulate.py --stage 1
 python TP3/scripts/simulate.py --bench decode_tb
 python TP3/scripts/simulate.py --list
 ```
@@ -204,13 +221,18 @@ El 07/10/2026 se ejecutó con Python 3.12 e Icarus **12.0 (devel),
 s20150603-1539-g2693dd32b**, paquete Windows `iverilog-v12-20220611-x64_setup.exe`
 extraído localmente sin ejecutar el instalador. Los cinco bancos pasaron:
 ALU 66, decoder/inmediatos/integración 5.280, banco 229, estado 42 y memorias 1.020.
+El 23/10/2026 se volvió a ejecutar esa regresión y se agregó el pipeline con
+15.380 checks: **22.017 comprobaciones aprobadas en seis bancos**.
 Los logs y `results.json` se generan en `TP3/build/`. Hay avisos informativos de
 sensibilidad combinacional a arrays de RAM. No hay fallos de simulación pendientes.
-Ver [informe de verificación](docs/verificacion_etapa_1.md) para cobertura y límites.
+El nuevo banco genera además `build/pipeline_trace.csv`. Los filtros `--stage` y
+`--bench` usan archivos de resultados propios para conservar el resumen completo.
+Ver los informes de [etapa 1](docs/verificacion_etapa_1.md) y
+[etapa 2](docs/verificacion_etapa_2.md) para cobertura y límites.
 
 No se ejecutaron Vivado, síntesis, implementación, UART física ni pruebas en
-placa. Las simulaciones de bloques no demuestran frecuencia máxima ni ejecución
-de programas completos.
+placa. Se ejecutan secuencias aritméticas de prueba, con NOP cuando hacen falta;
+no programas del subconjunto completo ni mediciones de frecuencia máxima.
 
 ## Lecturas y siguiente entrega
 
@@ -228,8 +250,9 @@ Consigna: páginas 13–19, leída completa. Semántica contrastada con
 Materiales inspeccionados y diferencias con la referencia se registran en
 [decisiones](docs/decisiones.md).
 
-La etapa 2 deberá integrar el pipeline aritmético con cuatro registros concretos,
+La etapa 2 ya integra el pipeline aritmético con cuatro registros concretos,
 fetch PC+4, selección ALU/LUI, destino y control viajando con cada instrucción,
-trazas por ciclo y prueba de pausa/reset. Los anchos propuestos, sin valid, son
-64/196/141/103 bits, calculados desde nuestros campos. Aún se usarán instrucciones
-independientes o NOP de separación en pruebas; el forwarding llegará en etapa 3.
+trazas por ciclo y pruebas de pausa/reset. Sus anchos, sin valid, son
+64/196/141/103 bits. El [README de etapa 2](README_etapa_2.md) explica los ciclos
+y el bypass WB/ID con ejemplos. La etapa 3 conectará memoria y resolverá riesgos
+de datos para quitar la necesidad de NOP manuales; sigue pendiente.

@@ -1,12 +1,12 @@
 # Plan de seis etapas de desarrollo
 
-Solo la etapa 1 está implementada. IF/ID/EX/MEM/WB son las cinco etapas del
-**hardware futuro**, no la numeración de este plan.
+Las etapas 1 y 2 están implementadas y verificadas en simulación RTL.
+IF/ID/EX/MEM/WB son las cinco etapas del **hardware**, no la numeración de este plan.
 
 | Etapa | Estado | Resultado / aceptación |
 |---|---|---|
 | 1. Diseño, ALU y bloques básicos | Completada en simulación RTL | Bloques, contratos, diagrama y pruebas automáticas; [evidencia](verificacion_etapa_1.md). |
-| 2. Pipeline aritmético | Pendiente | Operaciones R/I/LUI independientes superpuestas, traza por ciclo, reset/pausa y escrituras condicionadas por valid. |
+| 2. Pipeline aritmético | Completada en simulación RTL | R/I/LUI superpuestas, traza por ciclo, reset/pausa y escritura condicionada por valid; [evidencia](verificacion_etapa_2.md). |
 | 3. Memoria y dependencias | Pendiente | Loads/stores y programas lineales dependientes sin NOP manuales. |
 | 4. Saltos y ejecución controlada | Pendiente | Branch/JAL/JALR, RUN/STEP/HALT/ERROR, descarte correcto y pipeline vacío. |
 | 5. UART, carga y aplicación | Pendiente | Ensamblador → carga UART → ejecución → snapshot completo en PC. |
@@ -21,19 +21,21 @@ demostración de FPGA para cerrar esta etapa; no se afirma haberla hecho.
 Lecturas: impreso 303–310, 316–323, 346–348; PDF recortado indicado por el pedido
 6–13, 19–26, 49–51. El PDF completo disponible usa 328–335, 341–348, 371–373.
 
-## Etapa 2 — integrar la aritmética
+## Etapa 2 — entregada: pipeline aritmético
 
-Construir el núcleo IF/ID/EX/MEM/WB, las cuatro instancias concretas y sus campos
-según [arquitectura](arquitectura.md). Implementar fetch secuencial PC+4, selectores
-de operandos y resultado ALU/LUI, escritura WB con destino y control de la misma
-instrucción. MEM transportará resultados aritméticos. Todas las escrituras exigirán
-valid y core_enable; reset y pausa se controlarán externamente, sin RUN/STEP aún.
-La carga desde testbench/archivo será provisoria hasta etapa 5.
+Se integró `tp3_core` con las cuatro instancias y campos de
+[arquitectura](arquitectura.md), fetch PC+4, selectores de operandos/ALU/LUI y
+escritura WB con identidad y controles de la misma instrucción. MEM transporta
+resultados aritméticos. Las escrituras exigen valid y core_enable; reset y pausa
+se controlan externamente, sin RUN/STEP. `tp3_arithmetic_system` conecta IMEM y
+la carga lógica desde testbench, provisoria hasta etapa 5. El
+[README específico](../README_etapa_2.md) explica el funcionamiento por ciclos.
 
-Aceptar una prueba por cada R/I/LUI, superposición real y traza con PC/valid por
-ciclo, destino correcto y ausencia de escrituras al pausar o invalidar. Las
-dependencias cercanas podrán separarse con NOP solo en estas pruebas; no se
-afirmará soporte de dependencias. Lecturas: impreso 330–336, 345–350, 354–363;
+Aceptación cumplida: prueba de cada R/I/LUI, superposición real, traza PC/valid por
+ciclo, destino correcto y ausencia de escrituras al pausar/invalidar. Se probó
+bypass WB/ID con dos NOP entre productor y consumidor, sin implementar forwarding
+ni detección de dependencias cercanas. 15.380 checks de integración y regresión
+de etapa 1 aprobados. Lecturas: impreso 330–336, 345–350, 354–363;
 PDF recortado 33–39, 48–53, 57–66.
 
 ## Etapa 3 — memoria y riesgos de datos

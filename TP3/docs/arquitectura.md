@@ -1,23 +1,25 @@
-# Arquitectura y contratos de la etapa 1
+# Arquitectura y contratos — etapas 1 y 2
 
 El sistema previsto es un subconjunto educativo de RV32I, con cinco etapas de
 hardware. Las seis etapas **de desarrollo** están en [el plan](plan_etapas.md).
-En esta entrega existen bloques aislados; las flechas del diagrama describen
-conexiones futuras, no un procesador que ya ejecute programas.
+La etapa 2 conecta el pipeline aritmético. Las flechas continuas son conexiones
+implementadas; las punteadas corresponden a funciones futuras. Para seguir una
+instrucción por ciclos, ver [README de etapa 2](../README_etapa_2.md).
 
 ```mermaid
 flowchart LR
-    PC[PC] -.-> IM[IMEM]
-    IM -.-> FI[IF/ID pendiente]
-    FI -.-> ID[Decoder + inmediato + banco]
-    ID -.-> IE[ID/EX pendiente]
-    IE -.-> EX[Adaptador ALU]
-    EX -.-> EM[EX/MEM pendiente]
+    PC[PC] --> IM[IMEM]
+    IM --> FI[IF/ID]
+    FI --> ID[Decoder + inmediato + banco]
+    ID --> IE[ID/EX]
+    IE --> EX[Adaptador ALU + selector LUI]
+    EX --> EM[EX/MEM]
+    EM --> MW[MEM/WB]
     EM -.-> MI[Interfaz load/store pendiente]
     MI -.-> DM[DMEM]
-    DM -.-> MW[MEM/WB pendiente]
-    MW -.-> WB[Seleccion WB pendiente]
-    WB -.-> ID
+    DM -.-> MW
+    MW --> WB[Escritura WB]
+    WB --> ID
     EX -.-> BR[Saltos en EX pendientes]
     BR -.-> PC
     HOST[Aplicacion PC pendiente] -.-> UART[UART TP2 existente, integracion pendiente]
@@ -28,13 +30,15 @@ flowchart LR
     GEN[Registro generico con valid: implementado]
     classDef future fill:#fff1d6,stroke:#936200,stroke-dasharray:5 5;
     classDef ready fill:#ddf5e3,stroke:#24753b;
-    class PC,IM,ID,EX,DM,GEN ready;
-    class FI,IE,EM,MI,MW,WB,BR,HOST,UART,DBG future;
+    class PC,IM,ID,EX,DM,GEN,FI,IE,EM,MW,WB ready;
+    class MI,BR,HOST,UART,DBG future;
 ```
 
-Verde: bloques implementados en etapa 1. Naranja: integración o subsistema
-pendiente (la UART ya existe en TP2). Las cuatro instancias concretas de registro
-se construirán en etapa 2. No hay top sintetizable del procesador aún.
+Verde: bloques implementados. Naranja: integración o subsistema pendiente
+(la UART ya existe en TP2). Los cuatro registros concretos ya están conectados.
+MEM transporta resultados aritméticos; DMEM aún no se conecta. El wrapper de
+laboratorio `tp3_arithmetic_system` es RTL sintetizable, pero no hay top ni XDC
+de placa propios, ni evidencia de síntesis/temporización de TP3.
 
 ## Reglas comunes
 
@@ -49,13 +53,13 @@ físico aún sin medir. Las entradas deben estabilizarse antes del flanco activo
 
 | Archivo / módulo `tp3_…` | Entradas | Salidas | Estado, responsable futuro |
 |---|---|---|---|
-| `alu_adapter.v` / `alu_adapter` | a,b:32; alu_op:4 | result:32; zero:1 | Combinacional. EX seleccionará operandos; op inválida devuelve cero. |
+| `alu_adapter.v` / `alu_adapter` | a,b:32; alu_op:4 | result:32; zero:1 | Combinacional. EX selecciona operandos; op inválida devuelve cero. |
 | `decoder.v` / `decoder` | instruction:32 | Campos y controles de la tabla inferior | Combinacional, único decoder en ID. No ejecuta instrucciones. |
 | `immediate.v` / `immediate` | instruction:32; imm_type:3 | immediate:32; shamt:5 | Combinacional; ID. shamt=bits 24:20, separado del inmediato I completo. |
 | `register_file.v` / `register_file` | clk,reset,write_enable:1; rs1,rs2,rd,debug_addr:5; write_data:32 | read_data1,read_data2,debug_data:32 | Escritura WB síncrona, lecturas ID/debug combinacionales. Reset borra 32 registros. |
-| `state.v` / `pc` | clk,reset,enable:1; next_pc:32 | pc:32 | Parámetro RESET_PC=0. Reset > enable > hold. IF calculará PC+4/redirección. |
+| `state.v` / `pc` | clk,reset,enable:1; next_pc:32 | pc:32 | Parámetro RESET_PC=0. Reset > enable > hold. IF calcula PC+4; redirección futura. |
 | `state.v` / `pipeline_register` | clk,reset,flush,enable,valid_in:1; data_in:WIDTH | valid_out:1; data_out:WIDTH | WIDTH positivo, predeterminado 32. Reset > flush > enable > hold. |
-| `imem.v` / `imem` | clk,load_enable:1; fetch_addr,load_addr,load_data:32 | instruction:32; fetch_range_error,fetch_align_error,load_range_error,load_align_error:1 | Carga en posedge. IF lee; loader futuro escribe. |
+| `imem.v` / `imem` | clk,load_enable:1; fetch_addr,load_addr,load_data:32 | instruction:32; fetch_range_error,fetch_align_error,load_range_error,load_align_error:1 | Carga en posedge. IF lee; testbench escribe a través del wrapper, loader futuro. |
 | `dmem.v` / `dmem` | clk,write_enable:1; addr,write_data,debug_addr:32; byte_enable:4 | read_data,debug_data:32; range_error,align_error,debug_range_error,debug_align_error:1 | MEM accede; Debug Unit futura lee. Escritura en posedge. |
 
 Banco: x0 devuelve cero y rechaza escritura; x31 es general. El bypass de WB hacia
@@ -68,7 +72,8 @@ El registro genérico captura incluso los datos de una entrada inválida: `valid
 los vuelve irrelevantes. Reset/flush sí ponen datos y valid a cero. Es un conjunto
 de flip-flops, no un latch transparente. En la integración se usará
 `flush_local = core_enable && flush_request`, para que flush no rompa una pausa.
-Cada escritura arquitectónica deberá incluir `core_enable && valid && control`.
+La escritura WB ya incluye `core_enable && valid && control`, reset inactivo
+y rd distinto de cero. Los stores futuros también exigirán habilitación y valid.
 Un stall load-use futuro mantendrá PC/IF-ID, vaciará ID-EX y dejará avanzar los
 mayores. Reset explícito puede modificar estado estando pausado.
 
@@ -128,10 +133,14 @@ implementadas esas funciones aquí. El atributo distributed expresa la intenció
 la inferencia real y el cierre a 100 MHz requieren Vivado en etapa 6. BRAM síncrona
 exigiría cambios de latencia y control.
 
-## Buses concretos previstos (todavía no implementados)
+## Buses concretos del pipeline
 
-`valid` es un bit separado del parámetro WIDTH. PC+4 se recalcula a partir del PC
-de la instrucción. No se transportan funct3/funct7 ni imm_type después de ID.
+Implementados en `rtl/core.v`, con anchos en `rtl/tp3_defs.vh`. `valid` es un bit
+separado del parámetro WIDTH. La tabla enumera los campos de mayor a menor peso,
+en el mismo orden de las concatenaciones del RTL. PC+4 para enlaces se calculará
+a partir del PC de la instrucción cuando se integren saltos. No se transportan
+funct3/funct7 ni imm_type después de ID. Los campos para memoria/saltos se
+conservan como preparación; no se ejecutan esas funciones en etapa 2.
 
 | Registro | Campos de datos y control | WIDTH / con valid |
 |---|---|---|
@@ -152,7 +161,35 @@ Suma EX/MEM: 128+5+3+2+1+1+1=141. MEM/WB: 96+5+1+1=103.
 | rd, reg_write | forwarding futuro y WB | Escritura final condicionada por valid/enable |
 | is_halt, valid | Control etapa 4 | Drenaje y observabilidad; no efectos de burbujas |
 
-Las instrucciones ilegales se detectarán en ID y se comunicarán al controlador
-de error futuro antes de admitirse como válidas. Debe descartarse un error de un
-camino especulativo invalidado por un salto anterior. No se construye aquí un
-sistema de excepciones ni un controlador de ejecución.
+Las instrucciones ilegales se detectan en ID (`decode_illegal`); las reconocidas
+pero fuera del alcance aritmético activan `decode_unsupported`. En ambos casos
+ID/EX recibe valid=0. Por ahora se continúa buscando secuencialmente y se expone
+el diagnóstico, sin controlador de error ni excepción. En una integración futura
+deberá descartarse un error de un camino especulativo invalidado por un salto
+anterior. No hay redirecciones ni flush de control en esta etapa.
+
+## Interfaces integradas en etapa 2
+
+`tp3_core` tiene `clk/reset/core_enable/fetch_enable` de un bit, instrucción de
+32 bits e `instruction_error` como entradas. Su salida `pc` direcciona una IMEM
+combinacional externa. RESET_PC es parametrizable y vale cero por defecto.
+`fetch_enable=0` mantiene PC e inserta burbujas si core_enable=1; no pausa las
+instrucciones mayores. No hay control de longitud dentro del núcleo.
+
+`tp3_arithmetic_system` instancia el núcleo y la IMEM, parametrizada por
+IMEM_DEPTH_WORDS=256. El puerto lógico `load_enable/load_addr/load_data` conserva
+el contrato de palabras y direcciones en bytes de IMEM. Sus salidas
+load_accepted/load_rejected describen la operación en el siguiente posedge;
+aceptar requiere `!reset && !core_enable && pipeline_empty` y dirección válida.
+load_range_error/load_align_error y fetch_range_error/fetch_align_error se exponen
+por separado. Fetch erróneo mantiene PC e inserta burbujas, reportando fetch_error
+mientras exista solicitud. Estas señales no son estados de un controlador.
+
+Ambos módulos exponen debug_reg_addr:5 → debug_reg_data:32; PC; los cuatro buses
+anteriores; pipeline_valid:4 (bit 0 ID, 1 EX, 2 MEM, 3 WB); pipeline_empty; los
+diagnósticos fetch_valid/fetch_error/decode_illegal/decode_unsupported; y
+wb_pc/wb_instruction/wb_data:32, wb_rd:5, wb_write_enable:1. La escritura se
+observa antes del flanco y el puerto debug refleja el almacenamiento posterior
+al flanco. pipeline_empty es la reducción de los cuatro valid, no una bandera
+de finalización de programa. No hay peticiones de memoria pendientes con esta
+interfaz combinacional.
