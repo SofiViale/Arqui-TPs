@@ -1,3 +1,5 @@
+> Documento hist?rico de etapas 1?2. El estado vigente de la integraci?n completa est? en [README](../README.md), [protocolo](protocolo.md) y [verificaci?n final](verificacion_final.md). Las menciones a funciones futuras describen aquel corte hist?rico.
+
 # Plan de seis etapas de desarrollo
 
 Las etapas 1 y 2 están implementadas y verificadas en simulación RTL.

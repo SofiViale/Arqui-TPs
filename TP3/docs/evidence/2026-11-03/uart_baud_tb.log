@@ -1,0 +1,17 @@
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Tue Nov  3 10:12:15 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/test/xsim_script.tcl
+# xsim {test} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+PASS: uart_baud_tb (9600 baud, RX break recovery, full STATUS TX CRC)
+$finish called at time : 67430742 ns : File "C:/Users/usuario/Arqui-TPs/TP3/tb/uart_baud_tb.v" Line 35
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Nov  3 10:12:22 2026...

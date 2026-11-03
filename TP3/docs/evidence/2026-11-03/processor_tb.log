@@ -1,0 +1,117 @@
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Tue Nov  3 10:11:59 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/test/xsim_script.tcl
+# xsim {test} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+CASE demo mode=0
+CASE demo mode=1
+CASE add mode=0
+CASE add mode=1
+CASE sub mode=0
+CASE sub mode=1
+CASE sll mode=0
+CASE sll mode=1
+CASE srl mode=0
+CASE srl mode=1
+CASE sra mode=0
+CASE sra mode=1
+CASE and mode=0
+CASE and mode=1
+CASE or mode=0
+CASE or mode=1
+CASE xor mode=0
+CASE xor mode=1
+CASE slt mode=0
+CASE slt mode=1
+CASE sltu mode=0
+CASE sltu mode=1
+CASE addi mode=0
+CASE addi mode=1
+CASE andi mode=0
+CASE andi mode=1
+CASE ori mode=0
+CASE ori mode=1
+CASE xori mode=0
+CASE xori mode=1
+CASE slti mode=0
+CASE slti mode=1
+CASE sltiu mode=0
+CASE sltiu mode=1
+CASE slli mode=0
+CASE slli mode=1
+CASE srli mode=0
+CASE srli mode=1
+CASE srai mode=0
+CASE srai mode=1
+CASE lui mode=0
+CASE lui mode=1
+CASE successive_sources_x0 mode=0
+CASE successive_sources_x0 mode=1
+CASE wb_id mode=0
+CASE wb_id mode=1
+CASE load_store_base_data mode=0
+CASE load_store_base_data mode=1
+CASE false_load_use mode=0
+CASE false_load_use mode=1
+CASE bytes mode=0
+CASE bytes mode=1
+CASE neighbors mode=0
+CASE neighbors mode=1
+CASE loop mode=0
+CASE loop mode=1
+CASE flush_halt_illegal mode=0
+CASE flush_halt_illegal mode=1
+CASE flush_store_wb mode=0
+CASE flush_store_wb mode=1
+CASE load_branch mode=0
+CASE load_branch mode=1
+CASE jalr_alu mode=0
+CASE jalr_alu mode=1
+CASE jalr_load mode=0
+CASE jalr_load mode=1
+CASE misaligned_target mode=0
+CASE misaligned_target mode=1
+CASE error_lw_1 mode=0
+CASE error_lw_1 mode=1
+CASE error_lh_3 mode=0
+CASE error_lh_3 mode=1
+CASE error_sw_2 mode=0
+CASE error_sw_2 mode=1
+CASE error_sh_1 mode=0
+CASE error_sh_1 mode=1
+CASE error_lw_1024 mode=0
+CASE error_lw_1024 mode=1
+CASE error_lb_-1 mode=0
+CASE error_lb_-1 mode=1
+CASE error_sw_1024 mode=0
+CASE error_sw_1024 mode=1
+CASE error_sh_1024 mode=0
+CASE error_sh_1024 mode=1
+CASE last_byte mode=0
+CASE last_byte mode=1
+CASE illegal_precise mode=0
+CASE illegal_precise mode=1
+CASE no_halt mode=0
+CASE no_halt mode=1
+CASE watchdog mode=0
+CASE watchdog mode=1
+CASE watchdog_last_halt mode=0
+CASE watchdog_last_halt mode=1
+CASE mem_older_halt mode=0
+CASE mem_older_halt mode=1
+CASE halt_stops_store mode=0
+CASE halt_stops_store mode=1
+CASE watchdog_preserves_edge mode=0
+CASE watchdog_preserves_edge mode=1
+PASS: processor_tb (30416 checks)
+$finish called at time : 290900020 ps : File "C:/Users/usuario/Arqui-TPs/TP3/tb/processor_tb.v" Line 104
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Nov  3 10:12:03 2026...

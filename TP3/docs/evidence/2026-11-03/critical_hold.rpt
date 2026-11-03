@@ -1,0 +1,503 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Tue Nov  3 10:20:40 2026
+| Host         : sole running 64-bit major release  (build 9200)
+| Command      : report_timing -delay_type min -max_paths 10 -file C:/Users/usuario/Arqui-TPs/TP3/build/vivado/critical_hold.rpt
+| Design       : tp3_basys3_top
+| Device       : 7a35t-cpg236
+| Speed File   : -1  PRODUCTION 1.23 2018-06-13
+| Design State : Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Timing Report
+
+Slack (MET) :             0.068ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[3]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMA/WADR1
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.390ns  (logic 0.141ns (36.119%)  route 0.249ns (63.881%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.013ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.440ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.557     1.440    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[3]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y17         FDRE (Prop_fdre_C_Q)         0.141     1.581 r  system/debug_unit/load_addr_reg[3]/Q
+                         net (fo=220, routed)         0.249     1.831    system/cpu/imem/memory_reg_0_63_30_31/ADDRD1
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMA/WADR1
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMA/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR1)
+                                                      0.309     1.762    system/cpu/imem/memory_reg_0_63_30_31/RAMA
+  -------------------------------------------------------------------
+                         required time                         -1.762    <hidden>
+                         arrival time                           1.831    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.068    <hidden>
+
+Slack (MET) :             0.068ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[3]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMB/WADR1
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.390ns  (logic 0.141ns (36.119%)  route 0.249ns (63.881%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.013ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.440ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.557     1.440    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[3]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y17         FDRE (Prop_fdre_C_Q)         0.141     1.581 r  system/debug_unit/load_addr_reg[3]/Q
+                         net (fo=220, routed)         0.249     1.831    system/cpu/imem/memory_reg_0_63_30_31/ADDRD1
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMB/WADR1
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMB/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR1)
+                                                      0.309     1.762    system/cpu/imem/memory_reg_0_63_30_31/RAMB
+  -------------------------------------------------------------------
+                         required time                         -1.762    <hidden>
+                         arrival time                           1.831    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.068    <hidden>
+
+Slack (MET) :             0.068ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[3]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMC/WADR1
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.390ns  (logic 0.141ns (36.119%)  route 0.249ns (63.881%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.013ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.440ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.557     1.440    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[3]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y17         FDRE (Prop_fdre_C_Q)         0.141     1.581 r  system/debug_unit/load_addr_reg[3]/Q
+                         net (fo=220, routed)         0.249     1.831    system/cpu/imem/memory_reg_0_63_30_31/ADDRD1
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMC/WADR1
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMC/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR1)
+                                                      0.309     1.762    system/cpu/imem/memory_reg_0_63_30_31/RAMC
+  -------------------------------------------------------------------
+                         required time                         -1.762    <hidden>
+                         arrival time                           1.831    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.068    <hidden>
+
+Slack (MET) :             0.068ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[3]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMD/WADR1
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.390ns  (logic 0.141ns (36.119%)  route 0.249ns (63.881%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.013ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.440ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.557     1.440    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[3]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y17         FDRE (Prop_fdre_C_Q)         0.141     1.581 r  system/debug_unit/load_addr_reg[3]/Q
+                         net (fo=220, routed)         0.249     1.831    system/cpu/imem/memory_reg_0_63_30_31/ADDRD1
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMD/WADR1
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMD/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR1)
+                                                      0.309     1.762    system/cpu/imem/memory_reg_0_63_30_31/RAMD
+  -------------------------------------------------------------------
+                         required time                         -1.762    <hidden>
+                         arrival time                           1.831    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.068    <hidden>
+
+Slack (MET) :             0.076ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[6]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMA/WADR4
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.290ns  (logic 0.141ns (48.650%)  route 0.149ns (51.350%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.014ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.439ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.556     1.439    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y18         FDRE                                         r  system/debug_unit/load_addr_reg[6]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y18         FDRE (Prop_fdre_C_Q)         0.141     1.580 r  system/debug_unit/load_addr_reg[6]/Q
+                         net (fo=220, routed)         0.149     1.729    system/cpu/imem/memory_reg_0_63_30_31/ADDRD4
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMA/WADR4
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMA/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR4)
+                                                      0.200     1.653    system/cpu/imem/memory_reg_0_63_30_31/RAMA
+  -------------------------------------------------------------------
+                         required time                         -1.653    <hidden>
+                         arrival time                           1.729    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.076    <hidden>
+
+Slack (MET) :             0.076ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[6]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMB/WADR4
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.290ns  (logic 0.141ns (48.650%)  route 0.149ns (51.350%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.014ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.439ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.556     1.439    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y18         FDRE                                         r  system/debug_unit/load_addr_reg[6]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y18         FDRE (Prop_fdre_C_Q)         0.141     1.580 r  system/debug_unit/load_addr_reg[6]/Q
+                         net (fo=220, routed)         0.149     1.729    system/cpu/imem/memory_reg_0_63_30_31/ADDRD4
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMB/WADR4
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMB/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR4)
+                                                      0.200     1.653    system/cpu/imem/memory_reg_0_63_30_31/RAMB
+  -------------------------------------------------------------------
+                         required time                         -1.653    <hidden>
+                         arrival time                           1.729    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.076    <hidden>
+
+Slack (MET) :             0.076ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[6]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMC/WADR4
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.290ns  (logic 0.141ns (48.650%)  route 0.149ns (51.350%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.014ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.439ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.556     1.439    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y18         FDRE                                         r  system/debug_unit/load_addr_reg[6]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y18         FDRE (Prop_fdre_C_Q)         0.141     1.580 r  system/debug_unit/load_addr_reg[6]/Q
+                         net (fo=220, routed)         0.149     1.729    system/cpu/imem/memory_reg_0_63_30_31/ADDRD4
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMC/WADR4
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMC/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR4)
+                                                      0.200     1.653    system/cpu/imem/memory_reg_0_63_30_31/RAMC
+  -------------------------------------------------------------------
+                         required time                         -1.653    <hidden>
+                         arrival time                           1.729    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.076    <hidden>
+
+Slack (MET) :             0.076ns  (arrival time - required time)
+  Source:                 system/debug_unit/load_addr_reg[6]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/cpu/imem/memory_reg_0_63_30_31/RAMD/WADR4
+                            (rising edge-triggered cell RAMD64E clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.290ns  (logic 0.141ns (48.650%)  route 0.149ns (51.350%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.014ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.950ns
+    Source Clock Delay      (SCD):    1.439ns
+    Clock Pessimism Removal (CPR):    0.497ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.556     1.439    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y18         FDRE                                         r  system/debug_unit/load_addr_reg[6]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X36Y18         FDRE (Prop_fdre_C_Q)         0.141     1.580 r  system/debug_unit/load_addr_reg[6]/Q
+                         net (fo=220, routed)         0.149     1.729    system/cpu/imem/memory_reg_0_63_30_31/ADDRD4
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMD/WADR4
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.823     1.950    system/cpu/imem/memory_reg_0_63_30_31/WCLK
+    SLICE_X38Y18         RAMD64E                                      r  system/cpu/imem/memory_reg_0_63_30_31/RAMD/CLK
+                         clock pessimism             -0.497     1.453    <hidden>
+    SLICE_X38Y18         RAMD64E (Hold_ramd64e_CLK_WADR4)
+                                                      0.200     1.653    system/cpu/imem/memory_reg_0_63_30_31/RAMD
+  -------------------------------------------------------------------
+                         required time                         -1.653    <hidden>
+                         arrival time                           1.729    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.076    <hidden>
+
+Slack (MET) :             0.076ns  (arrival time - required time)
+  Source:                 system/debug_unit/loaded_reg[2]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/debug_unit/load_addr_reg[2]/D
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.444ns  (logic 0.275ns (61.893%)  route 0.169ns (38.107%))
+  Logic Levels:           2  (CARRY4=1 LUT2=1)
+  Clock Path Skew:        0.263ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.951ns
+    Source Clock Delay      (SCD):    1.439ns
+    Clock Pessimism Removal (CPR):    0.249ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.556     1.439    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X34Y17         FDRE                                         r  system/debug_unit/loaded_reg[2]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X34Y17         FDRE (Prop_fdre_C_Q)         0.164     1.603 r  system/debug_unit/loaded_reg[2]/Q
+                         net (fo=6, routed)           0.169     1.772    system/debug_unit/loaded[2]
+    SLICE_X36Y17         LUT2 (Prop_lut2_I1_O)        0.045     1.817 r  system/debug_unit/load_addr[3]_i_3/O
+                         net (fo=1, routed)           0.000     1.817    system/debug_unit/load_addr[3]_i_3_n_0
+    SLICE_X36Y17         CARRY4 (Prop_carry4_S[2]_O[2])
+                                                      0.066     1.883 r  system/debug_unit/load_addr_reg[3]_i_1/O[2]
+                         net (fo=1, routed)           0.000     1.883    system/debug_unit/load_addr0_B_dspDelayedAccum[2]
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[2]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.824     1.951    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[2]/C
+                         clock pessimism             -0.249     1.702    <hidden>
+    SLICE_X36Y17         FDRE (Hold_fdre_C_D)         0.105     1.807    system/debug_unit/load_addr_reg[2]
+  -------------------------------------------------------------------
+                         required time                         -1.807    <hidden>
+                         arrival time                           1.883    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.076    <hidden>
+
+Slack (MET) :             0.078ns  (arrival time - required time)
+  Source:                 system/debug_unit/loaded_reg[0]/C
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            system/debug_unit/load_addr_reg[1]/D
+                            (rising edge-triggered cell FDRE clocked by sys_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             sys_clk
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (sys_clk rise@0.000ns - sys_clk rise@0.000ns)
+  Data Path Delay:        0.446ns  (logic 0.288ns (64.614%)  route 0.158ns (35.386%))
+  Logic Levels:           1  (CARRY4=1)
+  Clock Path Skew:        0.263ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    1.951ns
+    Source Clock Delay      (SCD):    1.439ns
+    Clock Pessimism Removal (CPR):    0.249ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.226     0.226 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.631     0.858    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.884 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.556     1.439    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X34Y17         FDRE                                         r  system/debug_unit/loaded_reg[0]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X34Y17         FDRE (Prop_fdre_C_Q)         0.164     1.603 r  system/debug_unit/loaded_reg[0]/Q
+                         net (fo=6, routed)           0.158     1.761    system/debug_unit/loaded[0]
+    SLICE_X36Y17         CARRY4 (Prop_carry4_DI[0]_O[1])
+                                                      0.124     1.885 r  system/debug_unit/load_addr_reg[3]_i_1/O[1]
+                         net (fo=1, routed)           0.000     1.885    system/debug_unit/load_addr0_B_dspDelayedAccum[1]
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[1]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock sys_clk rise edge)    0.000     0.000 r  <hidden>
+    W5                                                0.000     0.000 r  clk
+                         net (fo=0)                   0.000     0.000    clk
+    W5                   IBUF (Prop_ibuf_I_O)         0.414     0.414 r  clk_IBUF_inst/O
+                         net (fo=1, routed)           0.685     1.099    clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.128 r  clk_IBUF_BUFG_inst/O
+                         net (fo=6063, routed)        0.824     1.951    system/debug_unit/clk_IBUF_BUFG
+    SLICE_X36Y17         FDRE                                         r  system/debug_unit/load_addr_reg[1]/C
+                         clock pessimism             -0.249     1.702    <hidden>
+    SLICE_X36Y17         FDRE (Hold_fdre_C_D)         0.105     1.807    system/debug_unit/load_addr_reg[1]
+  -------------------------------------------------------------------
+                         required time                         -1.807    <hidden>
+                         arrival time                           1.885    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.078    <hidden>
+
+
+
+

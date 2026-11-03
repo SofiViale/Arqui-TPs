@@ -1,3 +1,5 @@
+> Documento hist?rico de etapas 1?2. El estado vigente de la integraci?n completa est? en [README](../README.md), [protocolo](protocolo.md) y [verificaci?n final](verificacion_final.md). Las menciones a funciones futuras describen aquel corte hist?rico.
+
 # Registro de decisiones — etapas 1 y 2
 
 Inspección e implementación de etapa 1: 7 de octubre de 2026.
@@ -135,3 +137,16 @@ carga mientras está activo. Las políticas de comandos, DMEM y reprogramación 
 la sección anterior siguen siendo propuestas para etapas futuras. Los cuatro
 flush de integración están fijados a cero: su uso para riesgos/saltos es futuro.
 No se modificaron TP1/TP2 ni se añadieron restricciones/pines de placa.
+
+
+## Integraci?n completa ? 2 de noviembre de 2026
+
+Se conservaron el n?cleo/wrapper aritm?ticos para repetir sus pruebas, excluy?ndolos de s?ntesis. El n?cleo completo reutiliza los bloques originales sin duplicar la ALU ni el decoder. Mantiene RAM combinacional distribuida y reloj ?nico a 100 MHz; UART/controles nunca dependen del enable del n?cleo.
+
+El protocolo usa framing escapado y CRC-16/MODBUS, una solicitud pendiente y carga BEGIN/DATA/COMMIT. No hay ejecuci?n parcial ni reintentos autom?ticos con efectos. Un snapshot pausa y mantiene el n?cleo detenido. Se conserva EBREAK exacto como HALT educativo. Los errores especulativos viajan hasta EX y respetan el flush de instrucciones mayores.
+
+La carga por defecto limpia DMEM secuencialmente; conservarla requiere una opci?n expl?cita. El reset f?sico invalida el programa. La longitud impide ejecutar residuos. El watchdog cuenta ?nicamente ciclos habilitados y define los efectos que conserva en el flanco de cancelaci?n en el README.
+
+Se encontr? Vivado 2026.1 y Python 3.13.15; no se encontr? Icarus en PATH ni la copia local hist?rica. Se utiliz? xsim para la regresi?n nueva y acumulada. Los materiales externos de D:/Descargas citados en las etapas previas no estaban disponibles en este entorno; se ley? la consigna completa adjunta por el usuario y la documentaci?n del repositorio. No se presenta la lectura hist?rica de esos PDFs como una lectura nueva.
+
+La asignaci?n oficial Digilent invierte RX/TX respecto del XDC de TP2: TP3 usa B18 como entrada RX y A18 como salida TX. Se conserva TP2 sin cambios. Los resultados de herramientas y su alcance se documentan por separado en verificacion_final.md.

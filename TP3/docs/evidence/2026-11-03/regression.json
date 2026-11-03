@@ -1,0 +1,12 @@
+{
+  "alu_tb": "PASS",
+  "decode_tb": "PASS",
+  "register_file_tb": "PASS",
+  "state_tb": "PASS",
+  "memory_tb": "PASS",
+  "pipeline_tb": "PASS",
+  "processor_tb": "PASS",
+  "uart_system_tb": "PASS",
+  "uart_baud_tb": "PASS",
+  "board_tb": "PASS"
+}

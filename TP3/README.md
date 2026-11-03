@@ -1,258 +1,290 @@
-# TP3 — Procesador educativo: etapas 1 y 2
+# TP3 — Procesador RISC-V educativo para Basys 3
 
-Las **etapas 1 y 2 están completadas en simulación RTL**. Hay bloques reutilizables
-y un pipeline aritmético ejecutable de cinco etapas, con pruebas automáticas.
-La explicación de la nueva entrega está en el **[README de etapa 2](README_etapa_2.md)**:
-recorrido por ciclos, pausa/reset, dependencias, carga provisional y lectura de trazas.
-El objetivo final es un procesador de 32 bits con pipeline de cinco
-etapas, memorias separadas y una Debug Unit por UART que permita programar,
-ejecutar y observar el estado desde una PC.
+Implementación del subconjunto solicitado, con pipeline IF/ID/EX/MEM/WB, carga de programas por UART, ejecución continua y por ciclos, y depuración desde Windows. **No implementa RV32I completo.** TP1 y TP2 se reutilizan sin modificaciones.
 
-Se implementa el subconjunto de la consigna, no RV32I completo. El decoder
-reconoce sus 32 instrucciones y la convención educativa HALT. El núcleo de etapa 2
-ejecuta las 20 operaciones R/I aritméticas y LUI, con dependencias suficientemente
-separadas. Reconocer una carga o un salto no significa ejecutarlo. No hay forwarding, control de
-saltos, RUN/STEP, loader, protocolo UART nuevo ni aplicación del procesador.
+El núcleo, la aplicación, el protocolo y el top están implementados. La evidencia actual y los resultados de síntesis, implementación y timing se registran en [verificación final](docs/verificacion_final.md). Las evidencias de etapas 1 y 2 conservan sus fechas y alcance históricos. Una simulación no acredita funcionamiento físico: la primera prueba en placa se describe abajo.
 
-| Etapa de desarrollo | Estado |
-|---|---|
-| 1. Diseño, adaptación de ALU y bloques básicos | Completada: 5 bancos, 6.637 comprobaciones aprobadas |
-| 2. Pipeline aritmético | Completada: 15.380 comprobaciones, traza por ciclo y regresión de etapa 1 aprobada |
-| 3. Memoria y dependencias de datos | Pendiente |
-| 4. Saltos, paso a paso y parada | Pendiente |
-| 5. UART, Debug Unit y aplicación | Pendiente |
-| 6. Validación del sistema en FPGA | Pendiente |
+## Primera ejecución en Windows
 
-Estas seis etapas de desarrollo no son las cinco etapas IF/ID/EX/MEM/WB del
-pipeline. El [plan completo](docs/plan_etapas.md) fija la aceptación de cada una.
+Abrir PowerShell en la raíz del repositorio. Instalar Python 3.10 o superior, Vivado con soporte Artix-7 y los controladores USB de la placa. El ensamblador y las pruebas Python no necesitan paquetes externos; la comunicación física requiere pyserial:
 
-## Archivos y dependencias
-
-```text
-TP3/
-  .gitignore                     excluye build y caches de Python
-  README.md                      punto de entrada
-  README_etapa_2.md               explicación del pipeline integrado y su uso
-  rtl/
-    tp3_defs.vh                  códigos internos comunes
-    alu_adapter.v                instancia ALU TP1 + SLL/SLT/SLTU
-    decoder.v                    campos y control de todo el subconjunto
-    immediate.v                  inmediatos I/S/B/U/J y shamt
-    register_file.v              x0..x31, bypass y lectura debug
-    state.v                      PC y registro genérico con valid
-    imem.v                       memoria reprogramable por puerto lógico
-    dmem.v                       memoria con máscara de bytes y debug
-    core.v                       núcleo aritmético IF/ID/EX/MEM/WB
-    arithmetic_system.v          IMEM + núcleo, carga lógica de laboratorio
-  tb/
-    check.vh                     assertions y timeout común
-    alu_tb.v                     aritmética adaptada
-    decode_tb.v                  decoder, inmediatos e integración combinacional
-    register_file_tb.v           banco completo y bypass
-    state_tb.v                   PC y registros de 7/73 bits
-    memory_tb.v                  IMEM/DMEM, profundidades 1/3/256
-    pipeline_tb.v                secuencias aritméticas, pausa/reset y traza
-  scripts/simulate.py            compilación/simulación y resultados
-  docs/
-    arquitectura.md              diagrama, puertos, controles y buses futuros
-    decisiones.md                fuentes, inventario y elecciones justificadas
-    plan_etapas.md               seis etapas y criterios de aceptación
-    verificacion_etapa_1.md       evidencia y límites de la validación
-    verificacion_etapa_2.md       cobertura y resultados de la integración
-  build/                         generado e ignorado: logs, vvp, results.json
+```powershell
+py -m pip install -r TP3/pc/requirements.txt
+py TP3/pc/tp3.py assemble TP3/programs/demo.asm
+py -m unittest discover -s TP3/scripts -p test_host.py -v
+py TP3/scripts/regress.py
 ```
 
-Única dependencia RTL externa: [`TP1/src/alu.v`](../TP1/src/alu.v). Se instancia
-`alu #(.N_DATA(32), .N_OP(6))`; los archivos anteriores permanecen sin cambios.
-TP1 aporta ADD/SUB/AND/OR/XOR/SRL/SRA. El adaptador convierte el código de
-operación y limita el desplazamiento a `b[4:0]`. Agrega solamente SLL, SLT signed
-y SLTU unsigned. ADD/SUB son modulares de 32 bits. NOR no se utiliza y LUI usa
-selección de inmediato, sin inventar otra operación de ALU.
+Si Vivado no está en PATH, `regress.py` busca instalaciones habituales o acepta `--vivado-bin "C:/ruta/Vivado/bin"`. Icarus sigue siendo una alternativa para la batería histórica: `py TP3/scripts/simulate.py`, con `--iverilog` y `--vvp` si hace falta. El runner nuevo usa xvlog/xelab/xsim para todos los bancos, compila el RTL como Verilog y los testbenches como SystemVerilog para que `$fatal` sea efectivo. Todos los fallos/timeouts producen código de salida no cero.
 
-Se inspeccionaron RX, TX, baud, reset, interfaces y tests de TP2. RX entrega
-`rx_data/rx_valid_pulse/frame_error`; TX recibe `tx_data/tx_start_pulse` y expone
-`tx_busy/tx_done_pulse`. Baud entrega `tick_16x` con configuración de 100 MHz y
-9600 baud. Su integración queda para etapa 5: el protocolo y la calculadora de
-TP2 aún no controlan TP3. Hay otra definición `alu` en `TP2/src/alu.v`; el script
-de TP3 no la compila ni incluye tops/testbenches de los trabajos anteriores.
-El inventario de interfaces reales está en [decisiones](docs/decisiones.md).
+Desde una consola con `vivado` en PATH, generar el diseño completo:
 
-## Cómo se relacionan los bloques
+```powershell
+vivado -mode batch -source TP3/scripts/build.tcl -log TP3/build/vivado.log -journal TP3/build/vivado.jou
+```
+
+Si sólo se quiere crear el proyecto para abrirlo en la GUI:
+
+```powershell
+vivado -mode batch -source TP3/scripts/build.tcl -tclargs project
+```
+
+El proyecto es `TP3/build/vivado/project/tp3.xpr`; top `tp3_basys3_top`, parte `xc7a35tcpg236-1`. El flujo completo ejecuta síntesis, placement, routing, DRC y reportes de setup/hold/CDC/caminos sin restricciones. No escribe el bitstream si setup o hold tienen slack negativo. La salida es `TP3/build/vivado/tp3.bit`.
+
+Conectar la Basys 3 por su micro-USB **PROG/UART**, encenderla y programarla:
+
+```powershell
+vivado -mode batch -source TP3/scripts/program.tcl
+py TP3/pc/tp3.py ports
+```
+
+`program.tcl` exige exactamente un dispositivo xc7a35t y programa SRAM por JTAG. No modifica la flash. Reemplazar COM5 por el puerto enumerado y cerrar otros terminales seriales:
+
+```powershell
+py TP3/pc/tp3.py --port COM5 --baud 9600 status
+py TP3/pc/tp3.py --port COM5 load TP3/programs/demo.asm
+py TP3/pc/tp3.py --port COM5 run --wait
+py TP3/pc/tp3.py --port COM5 snapshot --used-memory
+py TP3/pc/tp3.py --port COM5 memory 0 4
+```
+
+El primer programa es:
+
+```asm
+addi x1, x0, 7
+addi x2, x1, 5
+sw   x2, 0(x0)
+lw   x3, 0(x0)
+add  x4, x3, x1
+halt
+```
+
+**Esperados:** estado `finalizado`, causa `HALT`, valid de los cuatro registros intermedios en cero; x0=0, x1=7, x2=12, x3=12, **x4=19 (0x00000013)**, x31=0. En dirección 0, bytes `0c 00 00 00`, palabra 12. Memoria utilizada: 0..3, ambos extremos incluidos. No se insertan NOP.
+
+Para repetir por ciclos:
+
+```powershell
+py TP3/pc/tp3.py --port COM5 restart
+py TP3/pc/tp3.py --port COM5 step
+py TP3/pc/tp3.py --port COM5 step --count 4
+py TP3/pc/tp3.py --port COM5 snapshot
+py TP3/pc/tp3.py --port COM5 run --wait
+```
+
+Cada STEP avanza **un ciclo**, no una instrucción. `--count` envía esa cantidad de órdenes y falla si se intenta avanzar más allá de un estado terminal. `snapshot` y `memory` pausan el núcleo y lo dejan pausado; `status` permite consultar el estado sin pausar. `run --wait` consulta STATUS hasta terminar y devuelve error del proceso si el núcleo terminó por error. Su timeout de espera no cancela RUN: usar `pause` si se desea cancelar la espera y detener el avance.
+
+## Arquitectura
 
 ```mermaid
 flowchart LR
-    P[PC + IMEM] --> F[IF/ID]
-    F --> D[Decoder + inmediato + banco]
-    D --> I[ID/EX]
-    I --> A[ALU adaptada o LUI]
-    A --> E[EX/MEM]
-    E --> W[MEM/WB + escritura WB]
-    W --> D
-    E -.-> M[Interfaz load/store pendiente]
-    M -.-> RAM[DMEM desconectada]
-    RAM -.-> W
-    U[UART TP2 + Debug Unit + PC externa] -.-> P
-    U -.-> D
-    U -.-> RAM
-    classDef ready fill:#ddf5e3,stroke:#24753b;
-    classDef future fill:#fff1d6,stroke:#936200,stroke-dasharray:5 5;
-    class P,D,A,RAM,F,I,E,W ready;
-    class M,U future;
+    PC[PC] --> IM[IMEM combinacional]
+    IM --> FI[IF/ID]
+    FI --> ID[Decoder + inmediato + banco x0..x31]
+    ID --> IX[ID/EX]
+    IX --> EX[Forwarding + ALU TP1 adaptada + saltos]
+    EX --> XM[EX/MEM]
+    XM --> MEM[Validación + selección bytes + DMEM]
+    MEM --> MW[MEM/WB]
+    MW --> WB[Escritura de banco]
+    WB --> ID
+    XM --> EX
+    MW --> EX
+    EX --> PC
+    HOST[CLI + ensamblador Python] <--> UART[RX/TX/baud TP2]
+    UART <--> PKT[Framing + CRC]
+    PKT <--> DBG[Debug Unit + loader]
+    DBG --> IM
+    DBG --> CTRL[RUN / STEP / pausa / reset]
+    CTRL --> PC
+    ID --> DBG
+    FI --> DBG
+    IX --> DBG
+    XM --> DBG
+    MW --> DBG
+    MEM --> DBG
 ```
 
-Verde: bloques implementados. Flechas continuas: integración de etapa 2.
-Naranja y flechas punteadas: subsistemas/conexiones pendientes (la UART existe
-en TP2 y DMEM está probada como bloque, pero no están conectadas al núcleo).
-Las cuatro instancias concretas del registro genérico ya forman el pipeline.
-El [diagrama y contratos detallados](docs/arquitectura.md) incluyen debug y saltos.
+Cinco etapas reales y cuatro registros intermedios con `valid` independiente. El PC de cada instrucción viaja con ella. MEM accede a DMEM y WB escribe el resultado final; varias instrucciones se superponen. No hay ejecución simulada en Python ni valores precalculados en debug.
 
-El **PC** almacena la dirección de búsqueda; recibe `next_pc` y solo cambia con
-enable o reset en un flanco positivo. Arranca en cero al resetear, parametrizable.
-La integración de etapa 2 ya calcula PC+4; el selector de saltos sigue pendiente.
+```text
+TP3/
+  rtl/
+    processor.v        núcleo completo: pipeline, riesgos, control y memorias
+    decoder.v          único decoder del subconjunto, existente
+    immediate.v        inmediatos I/S/B/U/J, existente
+    alu_adapter.v      adaptación de la ALU TP1, existente
+    register_file.v     32 registros, x0 fijo y bypass WB/ID, existente
+    imem.v / dmem.v     RAM distribuida de lectura combinacional, existentes
+    packet.v           parser/serializer, escape, CRC y timeout
+    debug.v            comandos, carga, captura de estado y respuestas
+    system.v           interconexión de UART TP2, debug y procesador
+    basys3_top.v        reset, sincronizadores, antirrebote y display
+    core.v             núcleo aritmético HISTÓRICO de etapa 2
+    arithmetic_system.v wrapper HISTÓRICO de laboratorio
+    state.v            bloques históricos de PC/pipeline
+    tp3_defs.vh        constantes y anchos de buses
+  pc/
+    assembler.py       ensamblador de una pasada de etiquetas + emisión
+    protocol.py        framing y CRC compatibles con RTL
+    snapshot.py        schema y presentación completa de pipeline/registros
+    tp3.py             CLI y cliente serial
+    requirements.txt   pyserial 3.5
+  programs/            demo.asm, loop.asm, bytes.asm, error.asm
+  constraints/basys3.xdc
+  scripts/
+    sources.tcl        lista explícita de fuentes sintetizables
+    build.tcl          proyecto, síntesis, implementación, reportes y bitstream
+    program.tcl        programación JTAG
+    regress.py         regresión acumulada con xsim
+    simulate.py        runner Icarus histórico
+    test_cases.py      programas y esperados independientes del RTL
+    uart_vectors.py    tramas PC y verificación de respuestas seriales RTL
+    test_host.py       pruebas Python
+  tb/                  bancos históricos + processor/uart_system/board_tb
+  docs/                protocolo, matriz, decisiones y evidencias
+  build/               generado e ignorado por Git
+```
 
-El **decoder** transforma los bits de la instrucción en campos y controles.
-`uses_rs1/uses_rs2` indican qué fuentes realmente se necesitan: los bits de un
-inmediato no son una dependencia de rs2. Una codificación no soportada activa
-`illegal` y desactiva todas las escrituras y clasificaciones.
+`core.v` y `arithmetic_system.v` permanecen para reproducir las pruebas originales. **No se usan en el top final ni se sintetizan.** El núcleo nuevo reutiliza decoder, inmediato, adaptador ALU, banco y memorias reales. Se instancia exclusivamente `TP1/src/alu.v`, a 32 bits; nunca `TP2/src/alu.v`. Se reutilizan `uart_rx`, `uart_tx`, `baud_rate_generator` y `reset_sync` de TP2. Las FSM de la calculadora de TP2 no son un loader y no se incorporan.
 
-El **generador de inmediatos** reconstruye I/S/B/U/J y extiende el signo.
-B/J ya incluyen el bit cero inferior. Los inmediatos lógicos y SLTIU también
-se extienden con signo; luego SLTIU compara sin signo. `shamt` es un puerto
-separado de cinco bits. El adaptador usa esos mismos cinco bits bajos de B.
+## Instrucciones y ensamblador
 
-El **banco** tiene dos lecturas de operandos, una escritura y una lectura de
-debug. x0 siempre vale cero, x31 es general. El bypass permite a ID ver el dato
-que WB está por escribir. Debug muestra el dato almacenado hasta el flanco.
-Reset síncrono limpia todos los registros y desactiva bypass mientras está alto.
+| Familia | Instrucciones |
+|---|---|
+| R | ADD SUB SLL SRL SRA AND OR XOR SLT SLTU |
+| I | ADDI ANDI ORI XORI SLTI SLTIU SLLI SRLI SRAI |
+| Loads | LB LH LW LBU LHU |
+| Stores | SB SH SW |
+| Control | BEQ BNE JAL JALR |
+| Superior | LUI |
+| Convención del proyecto | HALT = EBREAK exacto `0x00100073` |
 
-**Valid** distingue una instrucción real de una burbuja. **Enable** permite
-capturar el siguiente estado; sin él se mantiene. **Flush** limpia datos y valid,
-con prioridad sobre enable. Reset tiene prioridad máxima. Son registros por
-flanco, no latches transparentes. El núcleo ya condiciona la escritura del banco
-por enable y valid. Los flush están inactivos en etapa 2; al agregar saltos deben
-condicionarse por el avance global. Las escrituras futuras de DMEM también deben
-respetar pausa y validez. Pausar solo los registros intermedios no alcanzaría.
+Registros `x0`..`x31`, sin alias ABI ni registro reservado. Operandos separados por comas; enteros decimales o `0x`/`0b`/`0o`, con signo cuando corresponde. Etiquetas `nombre:` en línea propia o antes de una instrucción. Comentarios `#` o `;`. No hay directivas, instrucciones comprimidas, relocaciones ni expansiones ocultas.
 
-## Control por familia
+`nop` emite exactamente `addi x0,x0,0`; `halt` emite EBREAK. Son los únicos alias. JAL requiere `jal rd, etiqueta` o desplazamiento numérico en bytes. Branch numérico también es relativo al PC de la propia instrucción. `jalr rd, inmediato(rs1)`; loads/stores usan la misma sintaxis de dirección. LUI recibe el campo **unsigned de 20 bits**, no el valor de 32 bits ya desplazado. El ensamblador valida registros, aridad, rangos, shamt 0..31, alineación de destinos y etiquetas; los errores indican línea. Las direcciones de datos calculadas en ejecución se validan en hardware.
 
-Definiciones reales: [`rtl/tp3_defs.vh`](rtl/tp3_defs.vh), implementadas por
-[`rtl/decoder.v`](rtl/decoder.v). RW/MR/MW significan escritura de registro,
-lectura de memoria y escritura de memoria, antes de aplicar valid/enable.
+ADD/SUB desbordan modularmente. Los inmediatos I se extienden con signo, incluso en SLTIU y operaciones lógicas; SLTIU compara luego sin signo. Los shifts R usan cinco bits del desplazamiento. Branch tomado usa `PC + inmediato`; JAL además escribe `PC+4`; JALR calcula `(rs1+inmediato)&~1`, escribe `PC+4` y comprueba alineación a cuatro. No se usa rd como fuente del salto ni PC+4 como base de branch.
 
-| Instrucciones | Fuentes | Inmediato | Resultado WB | RW/MR/MW |
-|---|---|---|---|---|
-| add/sub/sll/srl/sra/and/or/xor/slt/sltu | rs1, rs2 | Ninguno | ALU | 1/0/0 |
-| addi/andi/ori/xori/slti/sltiu/slli/srli/srai | rs1 | I | ALU | 1/0/0 |
-| lb/lh/lw/lbu/lhu | rs1 | I | Memoria | 1/1/0 |
-| sb/sh/sw | rs1, rs2 | S | No escribe | 0/0/1 |
-| beq/bne | rs1, rs2 | B | No escribe | 0/0/0 |
-| jal | Ninguna | J | PC+4 | 1/0/0 |
-| jalr | rs1 | I | PC+4 | 1/0/0 |
-| lui | Ninguna | U | Inmediato | 1/0/0 |
-| HALT / ilegal | Ninguna | Ninguno | No escribe | 0/0/0 |
+| Programa | Resultados principales |
+|---|---|
+| demo.asm | x1=7, x2=x3=12, x4=19, palabra DMEM[0]=12 |
+| loop.asm | x2=15, x31=24, DMEM[4]=15, DMEM[0]=0 |
+| bytes.asm | x2=ffffff80, x3=128, x5=ffffffff, x6=65535, x7=ffff8000 |
+| error.asm | causa DMEM desalineada, x1=7, x2=x3=0, pipeline vacío |
 
-La tabla describe el decoder completo; el núcleo actual admite solo R/I
-aritméticas y LUI. Las demás activan diagnóstico y se invalidan después de ID,
-sin parada automática. La [tabla completa](docs/arquitectura.md#controles-del-decoder) especifica
-selectores, ALU, tamaño signed/unsigned y clasificación de saltos. Solo la palabra
-**`0x00100073` (EBREAK)** activa `is_halt`. HALT es un alias educativo propuesto,
-no una instrucción HALT estándar. ECALL es ilegal en este subconjunto. El
-ensamblador llegará en etapa 5 y la lógica de parada/drenaje en etapa 4.
+## Reloj, memorias y pipeline
 
-## Memorias y reloj
+Un único reloj de **100 MHz**, entrada W5 y restricción de 10 ns. RUN/STEP son habilitaciones; no se usan botones ni compuertas como reloj. UART y display siguen funcionando durante una pausa. El reset lógico es síncrono, activo alto; en placa se sincroniza el botón y se aplica la liberación de TP2. El arranque de FPGA genera un reset inicial.
 
-IMEM y DMEM son independientes, cada una con `DEPTH_WORDS=256` (1 KiB).
-Todas las direcciones externas son bytes de 32 bits y deben estar alineadas a
-cuatro; los arrays internos se indexan en palabras. Se soportan profundidades
-positivas no potencia de dos. El rango se valida antes de indexar, incluidos
-bits altos, evitando alias silenciosos. Se reportan rango y alineación por puerto;
-una lectura inválida devuelve cero con error y una escritura inválida se ignora.
+IMEM y DMEM tienen 256 palabras de 32 bits cada una (1 KiB). Lecturas combinacionales y escrituras en flanco positivo, sin cambiar la latencia de los bloques originales. Little-endian: el byte de dirección menor ocupa los bits 7:0. No se usan resets masivos de RAM; BEGIN y RESTART limpian DMEM secuencialmente, una palabra por ciclo, salvo la opción explícita de conservar datos. Un reset físico invalida el programa y limpia registros/pipeline, pero deja el contenido físico de RAM sin contrato hasta la siguiente carga.
 
-Las lecturas son combinacionales; las escrituras ocurren en posedge con enable.
-IMEM ofrece carga de palabras desde testbench ahora, loader UART después.
-El wrapper aritmético acepta esa carga solo con núcleo deshabilitado, pipeline
-vacío, reset inactivo y dirección válida; reset conserva IMEM.
-DMEM ofrece máscara de cuatro bytes y un puerto debug independiente. El bit 0
-de máscara modifica bits 7:0: es little-endian. Máscara 0000 no escribe. La
-selección/extensión de loads y el desplazamiento de stores pertenecen a etapa 3.
+Loads y stores validan la dirección original extendida a 33 bits y el extremo `dirección+tamaño` antes de alinear/indexar. LB/SB admiten cualquier byte; LH/LHU/SH requieren múltiplo de 2; LW/SW, múltiplo de 4. Un acceso inválido no lee un resultado arquitectónico ni escribe. SB/SH desplazan datos y máscaras, preservando los bytes vecinos. LB/LH extienden signo; LBU/LHU, ceros. El rango utilizado registra todos los bytes de **accesos exitosos**, inclusive loads; `used_valid=0` distingue ausencia de accesos.
 
-Las RAM no se borran por reset. Una posición válida aún no escrita contiene
-datos indeterminados, no cero. En lectura/escritura simultánea se ve el dato
-anterior antes del flanco y el nuevo después de asentarse; un consumidor que
-capture en ese mismo flanco toma el anterior. No hay bypass de RAM. La intención
-es RAM distribuida; una BRAM de lectura síncrona requeriría cambiar la latencia.
+Forwarding a ambas fuentes en EX: primero EX/MEM si es productor válido y no load, luego MEM/WB; x0 nunca recibe forwarding. El dato y la base de stores usan esos mismos operandos. Un load en EX que produce una fuente realmente usada en ID mantiene PC e IF/ID e inserta una burbuja en ID/EX, mientras MEM/WB avanzan. `uses_rs1/uses_rs2` evita falsos riesgos por bits de inmediato. WB/ID reutiliza el bypass del banco original.
 
-TP1/TP2 confirman Basys 3 y entrada de 100 MHz. TP3 conserva esa intención y
-no crea clocks derivados; aún no existen top/XDC propios ni cierre de timing.
-La futura UART y Debug Unit seguirán activas al pausar el núcleo.
-Las políticas futuras de carga, limpieza, longitud de programa y watchdog están
-en [decisiones](docs/decisiones.md#políticas-propuestas-para-integración-todavía-no-implementadas).
+Prioridades: reset/restart cancela escrituras; pausa mantiene estado; en un ciclo habilitado, error de MEM (más antiguo), parada/error de EX, drenaje, redirección de EX, stall, avance normal. Los saltos descartan IF/ID y la entrada joven de ID/EX. Los errores de fetch viajan como metadatos hasta EX; un salto anterior puede descartarlos. HALT e instrucciones ilegales también se resuelven en EX, evitando abortos especulativos. WB anterior y stores válidos de MEM se conservan frente a una parada en EX. Todos los efectos exigen valid y habilitación.
 
-## Ejecutar las pruebas
+## Control y errores
 
-Desde la raíz, en PowerShell o en un shell con Python 3:
+| Estado | Código | Comportamiento |
+|---|---:|---|
+| Pausado | 0 | Mantiene PC, pipeline, banco y DMEM |
+| Ejecutando | 1 | Un ciclo por flanco habilitado |
+| Drenando | 2 | No busca instrucciones; termina las anteriores |
+| Finalizado | 3 | HALT completado, pipeline vacío |
+| Error | 4 | Causa observable, pipeline vacío |
+
+El bit `running` indica si el drenaje avanza automáticamente. En modo STEP, un HALT entra en drenaje y hacen falta más STEP o RUN para completarlo; una pausa durante drenaje conserva estado 2 y pone running=0. `pipeline_empty` por sí solo **no** significa fin: también es cierto al inicio.
+
+RUN continúa hasta HALT/error/watchdog. STEP avanza un ciclo incluso durante stall. PAUSE impide el siguiente avance una vez aceptada por el controlador; la recepción UART no detiene retrospectivamente el núcleo. HALT no escribe banco y suprime todas las jóvenes; las mayores completan antes del estado final. RESTART descarta todo lo pendiente y reinicia PC en `entry`, banco, contadores, causa y rango utilizado.
+
+Causas: 0 ninguna; 1 HALT; 2 instrucción ilegal; 3 fetch fuera de longitud/rango o desalineado; 4 DMEM desalineada; 5 DMEM fuera de rango; 6 salto desalineado; 7 watchdog. `fault_pc` identifica la instrucción que falla; para watchdog indica el PC de búsqueda al cancelar. Si alineación y rango de DMEM fallan juntos, se informa alineación.
+
+El límite inicial es 1.000.000 ciclos habilitados, configurable con `limit N`; cero lo deshabilita. Cuenta ciclos con stall y drenaje, nunca pausa/comunicación. Se reinicia con BEGIN/COMMIT/RESTART. En el último ciclo permitido: un error preciso de MEM/EX o drenaje ya completado tiene prioridad; después el watchdog; después HALT, salto y stall. Al cancelar por watchdog se conservan el WB y store MEM válidos del propio flanco y los efectos previos, y se invalidan las instrucciones todavía en vuelo. Cambiar el límite a un valor menor al contador causa cancelación en el próximo ciclo habilitado. Los estados terminales requieren RESTART o una nueva carga.
 
 ```powershell
-python TP3/scripts/simulate.py
-python TP3/scripts/simulate.py --stage 2
-python TP3/scripts/simulate.py --stage 1
-python TP3/scripts/simulate.py --bench decode_tb
-python TP3/scripts/simulate.py --list
+py TP3/pc/tp3.py --port COM5 pause
+py TP3/pc/tp3.py --port COM5 limit 100000
+py TP3/pc/tp3.py --port COM5 restart --preserve-data
 ```
 
-Si Icarus no está en PATH, indicar ambos ejecutables. Por ejemplo, para la copia
-local extraída durante esta implementación:
+## UART, carga y snapshots
+
+UART 8N1, sin flow control, **9600 baud** por defecto. El parámetro `--baud` de la PC debe coincidir con el bitstream; no negocia el baud de la FPGA. El divisor TP2 es `floor(100000000/9600/16)=651`, baud real aproximado 9600,6.
+
+El [protocolo completo](docs/protocolo.md) especifica framing, escape, CRC, comandos, estados, tamaños, timeout y formato binario de snapshot. Se permite una sola solicitud pendiente. El cliente espera respuesta antes de transmitir la siguiente; no reintenta automáticamente STEP/RUN/cargas ante una respuesta perdida.
+
+La carga usa BEGIN(longitud,entrada,conservar), DATA(offset,palabras) y COMMIT. BEGIN sólo se acepta detenido y vacío, invalida el programa anterior y reinicia el estado. Los bloques DATA deben ser consecutivos y completos. COMMIT valida que se recibieron todos los bytes; sólo entonces permite ejecutar. Una carga interrumpida deja `program_valid=0`. CRC incorrecto no modifica el programa ni ejecuta una orden. Si se pierde el ACK, consultar estado o reiniciar la carga; no asumir que la orden falló.
+
+La longitud impide ejecutar palabras residuales al reemplazar un programa por uno más corto. Entrada y longitud son múltiplos de cuatro; `entry<longitud`. IMEM conserva físicamente el resto pero fetch fuera de longitud produce error, salvo que sea descartado por un salto anterior. No se ejecuta automáticamente tras cargar.
+
+Snapshots: 256 bytes de datos, con schema `0x33545031`, 16 palabras de cabecera, los 32 registros y los cuatro buses completos de 64/196/141/103 bits. Los campos se presentan sin recortar: PC, instrucción, fuentes, destino, operandos, inmediato, controles y datos de memoria/WB. Valid y metadatos de error se transmiten por separado en la cabecera. Los bits de relleno de los buses son cero. STATUS anuncia schema y anchos; la aplicación rechaza versiones incompatibles antes de cargar. Un snapshot pausa antes de capturar; los botones quedan inhibidos durante captura y respuesta. No mezcla ciclos.
+
+La salida de registros muestra hexadecimal, decimal unsigned y signed. Memoria muestra dirección, los cuatro bytes little-endian y ambas interpretaciones de la palabra. `snapshot --used-memory` alinea hacia afuera el rango observado para imprimir palabras completas y conserva en pantalla el rango exacto de bytes utilizados. Los huecos dentro del intervalo también aparecen. El timeout del cliente incluye el peor caso de escape, longitud máxima y baud; un snapshot a 9600 baud puede tardar una fracción significativa de segundo.
+
+Para reprogramar sin resintetizar:
 
 ```powershell
-python TP3/scripts/simulate.py --iverilog TP3/build/tools/icarus/app/bin/iverilog.exe --vvp TP3/build/tools/icarus/app/bin/vvp.exe
+py TP3/pc/tp3.py --port COM5 pause
+py TP3/pc/tp3.py --port COM5 restart
+py TP3/pc/tp3.py --port COM5 load TP3/programs/loop.asm
+py TP3/pc/tp3.py --port COM5 run --wait
+py TP3/pc/tp3.py --port COM5 snapshot --used-memory
 ```
 
-El script también detecta automáticamente esa copia local cuando no hay Icarus
-en PATH. `build/` no se versiona: en otro equipo hay que disponer de Icarus o
-pasar rutas propias. El script no instala ni descarga herramientas.
+Si el programa ya terminó con pipeline vacío, se puede cargar directamente. `--preserve-data` en LOAD o RESTART conserva explícitamente DMEM; por defecto se limpia. El banco siempre se limpia. La entrada del programa sigue siendo relativa a la IMEM cargada desde dirección cero.
 
-Compila Verilog con `-g2005 -Wall`, includes y tops explícitos y solamente las
-fuentes necesarias para cada banco. `--list` imprime los comandos completos.
-Resuelve el repositorio desde su propio archivo, sin depender del directorio
-incidental. Cada fallo de compilación, assertion, timeout o herramienta ausente
-produce salida distinta de cero; cada simulación debe además emitir su PASS.
+## Controles locales y restricciones
 
-El 07/10/2026 se ejecutó con Python 3.12 e Icarus **12.0 (devel),
-s20150603-1539-g2693dd32b**, paquete Windows `iverilog-v12-20220611-x64_setup.exe`
-extraído localmente sin ejecutar el instalador. Los cinco bancos pasaron:
-ALU 66, decoder/inmediatos/integración 5.280, banco 229, estado 42 y memorias 1.020.
-El 23/10/2026 se volvió a ejecutar esa regresión y se agregó el pipeline con
-15.380 checks: **22.017 comprobaciones aprobadas en seis bancos**.
-Los logs y `results.json` se generan en `TP3/build/`. Hay avisos informativos de
-sensibilidad combinacional a arrays de RAM. No hay fallos de simulación pendientes.
-El nuevo banco genera además `build/pipeline_trace.csv`. Los filtros `--stage` y
-`--bench` usan archivos de resultados propios para conservar el resumen completo.
-Ver los informes de [etapa 1](docs/verificacion_etapa_1.md) y
-[etapa 2](docs/verificacion_etapa_2.md) para cobertura y límites.
+| Control | Función / pin |
+|---|---|
+| btnC | Reset total del sistema, U18; requiere volver a cargar programa |
+| btnU | STEP de un ciclo cuando está detenido, T18 |
+| sw[4:0] | Índice x0..x31: V17 V16 W16 W17 W15 |
+| sw[5] | 0 registro, 1 PC; V15 |
+| sw[6] | 0 mitad baja, 1 mitad alta; W14 |
+| led[3:0] | valid IF/ID, ID/EX, EX/MEM, MEM/WB |
+| led[6:4] | Código de estado |
+| led[7] | Programa válido |
+| led[8] | Ejecución continua activa |
+| led[9] | Debug/UART ocupado |
+| led[15:10] | Causa de parada/error |
+| seg[6:0], an[3:0], dp | Display hexadecimal, activo bajo; punto apagado |
+| serial_rx / serial_tx | B18 / A18, LVCMOS33 |
 
-No se ejecutaron Vivado, síntesis, implementación, UART física ni pruebas en
-placa. Se ejecutan secuencias aritméticas de prueba, con NOP cuando hacen falta;
-no programas del subconjunto completo ni mediciones de frecuencia máxima.
+Antirrebote: 10 ms de nivel estable, sincronización de dos flip-flops y un único pulso por flanco ascendente estable. Mantener el botón presionado no repite STEP. Soltarlo también debe superar el antirrebote. Los switches pasan por dos registros de sincronización. Los pulsos locales durante recepción de una trama, servicio de un comando, respuesta, RUN o estado terminal se descartan; no se encolan. Reset tiene prioridad global. Las órdenes UART aceptadas dominan al paso local.
 
-## Lecturas y siguiente entrega
+Para observar x4=19: sw[4:0]=00100, sw5=0, sw6=0; display `0013`. sw6=1 muestra `0000`. El puerto de lectura del banco se comparte con debug durante transferencias; consultar el display con led9 apagado.
 
-El libro explica MIPS: sirve para entender lógica/estado, controles y pipeline,
-pero la codificación y la semántica de instrucciones de TP3 son RISC-V.
+Asignación completa de pines en [basys3.xdc](constraints/basys3.xdc), contrastada con el [Master XDC oficial](https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Basys-3-Master.xdc). Reloj, polaridad del display y conexión USB/JTAG/UART se contrastaron con el [manual oficial Digilent](https://reference.digilentinc.com/_media/reference/programmable-logic/basys-3/basys3_rm.pdf). El XDC antiguo de TP2 invierte los nombres RX/TX respecto del Master; TP3 usa la asignación oficial y conserva TP2 intacto.
 
-| Tema | Página impresa | PDF recortado citado en el pedido (no disponible) | PDF completo encontrado |
-|---|---|---|---|
-| Lógica, sincronización, PC, banco y ALU | 303–310 | 6–13 | 328–335 |
-| Control y decodificación | 316–323 | 19–26 | 341–348 |
-| Registros intermedios | 346–348 | 49–51 | 371–373 |
+Las excepciones temporales sólo cubren entradas asíncronas hacia su primer sincronizador y salidas humanas/UART sin receptor síncrono externo. Los caminos internos y entre etapas de sincronización siguen restringidos. No se rebaja el objetivo de reloj para ocultar errores. Los reportes distinguen retardo de datos, skew y slack.
 
-Consigna: páginas 13–19, leída completa. Semántica contrastada con
-[RISC-V RV32I oficial](https://docs.riscv.org/reference/isa/v20260120/unpriv/rv32.html).
-Materiales inspeccionados y diferencias con la referencia se registran en
-[decisiones](docs/decisiones.md).
+## Verificación y solución de problemas
 
-La etapa 2 ya integra el pipeline aritmético con cuatro registros concretos,
-fetch PC+4, selección ALU/LUI, destino y control viajando con cada instrucción,
-trazas por ciclo y pruebas de pausa/reset. Sus anchos, sin valid, son
-64/196/141/103 bits. El [README de etapa 2](README_etapa_2.md) explica los ciclos
-y el bypass WB/ID con ejemplos. La etapa 3 conectará memoria y resolverá riesgos
-de datos para quitar la necesidad de NOP manuales; sigue pendiente.
+```powershell
+py TP3/scripts/regress.py --bench processor_tb
+py TP3/scripts/regress.py --bench uart_system_tb
+py TP3/scripts/regress.py --bench board_tb
+py TP3/scripts/regress.py --bench uart_baud_tb
+py TP3/scripts/regress.py --bench pipeline_tb
+```
+
+Los esperados aritméticos son constantes independientes del decoder/ALU; se comprueban los 32 registros y toda DMEM después de cada programa, en RUN y STEP. La prueba UART genera tramas con el código Python de producción, transmite bits consecutivos por RX, decodifica los bits reales de TX y analiza snapshots con el decoder de producción. Los timeouts son fallos; los mocks no sustituyen RX/TX. El test de placa simula rebotes, pulsación sostenida y reset. Ver [matriz de requisitos](docs/matriz.md) y [evidencia final](docs/verificacion_final.md).
+
+| Síntoma | Comprobación / solución |
+|---|---|
+| No aparece COM | Cable de datos, conector micro-USB PROG, alimentación y drivers; `ports` |
+| Acceso denegado al puerto | Cerrar calculadora TP2, terminales seriales y otras instancias |
+| Timeout UART | Bitstream TP3 correcto, baud 9600, RX B18/TX A18; esperar fin de respuesta antes de otra orden |
+| Programa inválido | Carga incompleta o reset físico; repetir LOAD completo |
+| Carga rechazada como ocupada | PAUSE y RESTART para vaciar pipeline, luego LOAD |
+| STEP no termina una instrucción | STEP avanza un ciclo; revisar valid, stall y drenaje |
+| Drenando detenido | RUN o más STEP; la pausa no completa las mayores por sí sola |
+| Causa fetch | Falta HALT, salto fuera de longitud o entrada errónea |
+| Causa DMEM | Dirección en bytes, tamaño/alineación y rango 0..1023 |
+| Watchdog | Revisar bucle o aumentar `limit` antes de RUN; `restart` reinicia contador |
+| Schema incompatible | Aplicación y bitstream de versiones distintas; reconstruir/programar ambos |
+| Vivado no genera .bit | Revisar logs, DRC, setup/hold y caminos sin restricciones en build/vivado |
+
+La prueba física restante debe registrar versión/bitstream, puerto/baud, resultados de los cuatro ejemplos, reprogramación más corta, paso local sostenido y comparación RUN/STEP. No se deduce esa evidencia de una simulación ni de un bitstream generado.
