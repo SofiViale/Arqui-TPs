@@ -1,0 +1,2 @@
+PASS: register_file_tb (229 checks)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\register_file_tb.v:48: $finish called at 436000 (1ps)

@@ -1,0 +1,2 @@
+PASS: board_tb (debounce, sustained press, reset and outputs)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\board_tb.v:27: $finish called at 2160000 (1ps)

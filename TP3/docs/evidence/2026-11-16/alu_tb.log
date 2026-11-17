@@ -1,0 +1,2 @@
+PASS: alu_tb (66 checks)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\alu_tb.v:54: $finish called at 33000 (1ps)

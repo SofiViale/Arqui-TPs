@@ -1,0 +1,2 @@
+PASS: decode_tb (5280 checks)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\decode_tb.v:216: $finish called at 2640000 (1ps)

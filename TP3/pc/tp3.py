@@ -6,44 +6,8 @@ import sys
 import time
 from pathlib import Path
 from assembler import assemble
-from protocol import COMMANDS,ERRORS,SCHEMA,Parser,frame
-from snapshot import WIDTHS,STATES,CAUSES,format_snapshot,snapshot,signed32
-
-class Client:
-    def __init__(self, transport, baud=9600):
-        self.transport=transport;self.baud=baud;self.seq=0;self.parser=Parser()
-    def request(self,cmd,payload=b''):
-        command=COMMANDS[cmd];seq=self.seq;self.seq=(seq+1)&255
-        packet=frame(command,seq,payload)
-        self.transport.write(packet);self.transport.flush()
-        # Worst-case escaping, 8N1, maximum response plus request and device work.
-        deadline=time.monotonic()+2+2*(len(packet)+2*519+2)*10/self.baud
-        while time.monotonic()<deadline:
-            for got_cmd,got_seq,body in self.parser.feed(self.transport.read(1)):
-                if (got_cmd,got_seq)!=(command|0x80,seq):continue
-                if not body:raise RuntimeError('respuesta sin status')
-                if body[0]:raise RuntimeError(ERRORS.get(body[0],f'error {body[0]}'))
-                return body[1:]
-        self.parser.reset()
-        raise TimeoutError('UART sin respuesta válida; no se reintenta automáticamente una orden con efectos')
-    def status(self):
-        body=self.request('status')
-        if len(body)!=44:raise RuntimeError('capacidades incompatibles')
-        values=struct.unpack('<11I',body)
-        if values[0]!=SCHEMA or tuple(values[4:8])!=WIDTHS or values[2]!=512:
-            raise RuntimeError('RTL/aplicación incompatibles (schema/anchos/protocolo)')
-        return values
-    def load(self,words,entry=0,preserve=False):
-        cap=self.status();raw=struct.pack('<'+'I'*len(words),*words)
-        if len(raw)>cap[1] or entry%4 or not 0<=entry<len(raw):raise ValueError('tamaño/entrada de programa inválidos')
-        self.request('begin',struct.pack('<IIB',len(raw),entry,preserve))
-        for offset in range(0,len(raw),cap[3]):self.request('data',struct.pack('<I',offset)+raw[offset:offset+cap[3]])
-        self.request('commit')
-    def memory(self,address,count):
-        if not 0<=address<=0xffffffff or count>0xffffffff or address+count>0x100000000 or address%4 or count%4 or count<=0:raise ValueError('dirección y cantidad deben ser múltiplos de 4; cantidad positiva')
-        result=bytearray()
-        for start in range(address,address+count,128):result+=self.request('memory',struct.pack('<II',start,min(128,address+count-start)))
-        return bytes(result)
+from snapshot import STATES,CAUSES,format_snapshot,snapshot,signed32
+from client import Client
 
 def show_memory(address,data):
     for offset in range(0,len(data),4):

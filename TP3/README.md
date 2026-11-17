@@ -4,6 +4,31 @@ Implementación del subconjunto solicitado, con pipeline IF/ID/EX/MEM/WB, carga 
 
 El núcleo, la aplicación, el protocolo y el top están implementados. La evidencia actual y los resultados de síntesis, implementación y timing se registran en [verificación final](docs/verificacion_final.md). Las evidencias de etapas 1 y 2 conservan sus fechas y alcance históricos. Una simulación no acredita funcionamiento físico: la primera prueba en placa se describe abajo.
 
+## Interfaz gráfica de escritorio
+
+Desde la raíz del repositorio, con Python 3.10 o superior y Tcl/Tk (incluido en el instalador oficial de Python para Windows):
+
+```powershell
+py -m pip install -r TP3/pc/requirements.txt
+py TP3/pc/gui.py
+```
+
+Sin FPGA, elegir explícitamente la demostración:
+
+```powershell
+py TP3/pc/gui.py --demo --program TP3/programs/demo.asm
+```
+
+La GUI usa tkinter/ttk y el mismo cliente UART que la CLI. Incluye conexión verificada por STATUS, carga ASM validada, RUN, pausa, avance de **un ciclo**, reinicio de ejecución, 32 registros, cinco paneles de pipeline, lectura de DMEM, log y exportación JSON. Al terminar RUN, consulta registros/pipeline y memoria usada; no captura durante RUN sin una acción explícita que indique la pausa. La demostración siempre muestra **MODO DEMOSTRACIÓN — SIN FPGA** y no se activa ante errores de conexión.
+
+Consultar la [guía de la GUI](docs/gui.md) para controles, semántica, límites y prueba manual; los [resultados de verificación de la GUI](docs/verificacion_gui.md) separan software, simulación y pruebas pendientes en placa.
+
+```powershell
+py -m unittest discover -s TP3/scripts -p "test_*.py" -v
+```
+
+Este comando incluye dos pruebas que crean ventanas Tk y requieren una sesión gráfica. Las pruebas sin ventana pueden ejecutarse por separado con `-p test_host.py` y `-p test_gui.py`.
+
 ## Primera ejecución en Windows
 
 Abrir PowerShell en la raíz del repositorio. Instalar Python 3.10 o superior, Vivado con soporte Artix-7 y los controladores USB de la placa. El ensamblador y las pruebas Python no necesitan paquetes externos; la comunicación física requiere pyserial:
@@ -16,6 +41,8 @@ py TP3/scripts/regress.py
 ```
 
 Si Vivado no está en PATH, `regress.py` busca instalaciones habituales o acepta `--vivado-bin "C:/ruta/Vivado/bin"`. Icarus sigue siendo una alternativa para la batería histórica: `py TP3/scripts/simulate.py`, con `--iverilog` y `--vvp` si hace falta. El runner nuevo usa xvlog/xelab/xsim para todos los bancos, compila el RTL como Verilog y los testbenches como SystemVerilog para que `$fatal` sea efectivo. Todos los fallos/timeouts producen código de salida no cero.
+
+También se pueden ejecutar los diez bancos completos con Icarus: `py TP3/scripts/regress.py --simulator icarus` (acepta `--iverilog` y `--vvp`). El runner preserva las palabras clave Verilog del RTL en una unidad generada y compila los bancos con assertions SystemVerilog, sin editar las fuentes. Conserva resultados y logs separados de xsim.
 
 Desde una consola con `vivado` en PATH, generar el diseño completo:
 
@@ -104,7 +131,7 @@ flowchart LR
     MEM --> DBG
 ```
 
-Cinco etapas reales y cuatro registros intermedios con `valid` independiente. El PC de cada instrucción viaja con ella. MEM accede a DMEM y WB escribe el resultado final; varias instrucciones se superponen. No hay ejecución simulada en Python ni valores precalculados en debug.
+Cinco etapas reales y cuatro registros intermedios con `valid` independiente. El PC de cada instrucción viaja con ella. MEM accede a DMEM y WB escribe el resultado final; varias instrucciones se superponen. En la conexión real, los datos provienen del hardware, sin ejecución Python ni valores precalculados en debug. El modo explícito `--demo` usa un modelo educativo separado, sin FPGA.
 
 ```text
 TP3/
@@ -127,7 +154,12 @@ TP3/
     assembler.py       ensamblador de una pasada de etiquetas + emisión
     protocol.py        framing y CRC compatibles con RTL
     snapshot.py        schema y presentación completa de pipeline/registros
-    tp3.py             CLI y cliente serial
+    tp3.py             CLI (conserva sus comandos)
+    client.py          cliente serial compartido por CLI y GUI
+    model.py           validación, desensamblado y procedencia de lecturas
+    worker.py          único dueño del puerto, cola y eventos
+    gui.py             ventana tkinter/ttk en español
+    demo.py            transporte simulado explícito y modelo educativo
     requirements.txt   pyserial 3.5
   programs/            demo.asm, loop.asm, bytes.asm, error.asm
   constraints/basys3.xdc

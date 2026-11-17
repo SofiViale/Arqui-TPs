@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[2];TP3=ROOT/'TP3';BUILD=TP3/'build'
 sys.path.insert(0,str(TP3/'pc'))
 from assembler import assemble
 from test_cases import CASES
-from simulate import BENCHES
+from simulate import BENCHES,resolve_tool
 FULL=['alu_adapter','decoder','immediate','register_file','imem','dmem','processor']
 SYSTEM=FULL+['packet','debug','system']
 
@@ -71,23 +71,52 @@ def simulate_bench(bench,binpath):
     print('\n'.join(line for line in out.splitlines() if 'PASS:' in line))
     return out
 
+def simulate_icarus_bench(bench,compiler,runtime):
+    """Keep RTL Verilog-2005 keywords, with SystemVerilog assertions in benches."""
+    work=BUILD/'icarus'/bench;work.mkdir(parents=True,exist_ok=True)
+    src=sources(bench)
+    # Icarus has one language option per invocation. A generated translation unit
+    # preserves the original RTL verbatim while avoiding SV's reserved 'sequence'.
+    wrapper=work/'rtl_sources.v'
+    wrapper.write_text('`begin_keywords "1364-2005"\n'+
+                       '\n'.join(path.read_text(encoding='utf-8') for path in src[:-1])+
+                       '\n`end_keywords\n',encoding='utf-8')
+    output=work/'test.vvp'
+    run_command([compiler,'-g2012','-I',TP3/'rtl','-I',TP3/'tb','-I',BUILD,
+                 '-s',bench,'-o',output,wrapper,src[-1]],work,'compile.log')
+    command=[runtime,output]
+    if bench=='pipeline_tb':command+=['+TRACE='+str(BUILD/'pipeline_trace_current.csv')]
+    if bench=='uart_system_tb':command+=['+INPUT='+str(BUILD/'uart_input.txt'),'+OUTPUT='+str(BUILD/'uart_output.txt')]
+    out=run_command(command,work,'simulate.log',timeout=240)
+    if f'PASS: {bench}' not in out or 'FAIL' in out or 'FATAL:' in out:
+        raise RuntimeError(f'{bench} sin PASS válido; ver {work}')
+    print('\n'.join(line for line in out.splitlines() if 'PASS:' in line))
+    return out
+
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--vivado-bin');parser.add_argument('--bench',choices=list(BENCHES)+['processor_tb','uart_system_tb','uart_baud_tb','board_tb']);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--vivado-bin');parser.add_argument('--bench',choices=list(BENCHES)+['processor_tb','uart_system_tb','uart_baud_tb','board_tb'])
+    parser.add_argument('--simulator',choices=['xsim','icarus'],default='xsim')
+    parser.add_argument('--iverilog');parser.add_argument('--vvp');args=parser.parse_args()
     BUILD.mkdir(exist_ok=True);generate_cases();results={}
     try:
-        binpath=vivado_bin(args.vivado_bin)
+        if args.simulator=='xsim':binpath=vivado_bin(args.vivado_bin)
+        else:
+            compiler=resolve_tool(args.iverilog,'iverilog');runtime=resolve_tool(args.vvp,'vvp')
+            if not compiler or not runtime:raise RuntimeError('faltan iverilog/vvp; indicar --iverilog y --vvp')
         benches=[args.bench] if args.bench else list(BENCHES)+['processor_tb','uart_system_tb','uart_baud_tb','board_tb']
         for bench in benches:
             print('Running',bench,flush=True)
             if bench=='uart_system_tb':
                 from uart_vectors import generate,verify
                 expected=generate(BUILD)
-            simulate_bench(bench,binpath)
+            if args.simulator=='xsim':simulate_bench(bench,binpath)
+            else:simulate_icarus_bench(bench,compiler,runtime)
             if bench=='uart_system_tb':verify(BUILD,expected)
             results[bench]='PASS'
     except (RuntimeError,subprocess.TimeoutExpired,OSError,AssertionError,ValueError) as e:
         print('FAIL:',e,file=sys.stderr);results[locals().get('bench','setup')]='FAIL'
-    report=BUILD/(f'regression_{args.bench}.json' if args.bench else 'regression.json')
+    suffix=('_icarus' if args.simulator=='icarus' else '')+('_'+args.bench if args.bench else '')
+    report=BUILD/('regression'+suffix+'.json')
     report.write_text(json.dumps(results,indent=2)+'\n',encoding='utf-8')
     return 0 if results and all(x=='PASS' for x in results.values()) else 1
 if __name__=='__main__':sys.exit(main())

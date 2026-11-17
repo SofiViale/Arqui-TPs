@@ -40,3 +40,17 @@ La prueba física de Basys 3 se registra por separado; ninguna fila de simulaci�
 | Primera prueba y reprogramación físicas | README + CLI | pendiente conectar placa y ejecutar checklist del README |
 
 Los esperados de `test_cases.py` son valores literales, independientes de la ALU/decoder. El ensamblador sólo produce estímulos. Cada caso se ejecuta en RUN y STEP, y verifica x0..x31 y las 256 palabras de DMEM, incluidas las que deben permanecer en cero. Los anchos y flags del snapshot se contrastan con RTL, no se asumen a partir de un documento antiguo.
+
+## Ampliación GUI — 16/11/2026
+
+| Requisito | Implementación | Verificación |
+|---|---|---|
+| GUI Windows y CLI conservada | gui.py + client.py compartido | test_gui.py / test_gui_window.py; navegación visible |
+| ASM, STEP de ciclo, RUN y pausa/reinicio | worker.py; comandos UART existentes | callbacks Tk contra transporte de tramas; ACK y captura posterior |
+| Registros, pipeline y DMEM usada | snapshot.py/model.py y vistas | campos/valores, anomalía x0, 50 programas demo, UART RTL |
+| Responsividad, errores y no reintentos | dueño único, cola y cancelación | parciales/CRC/timeout/ACK perdido, cierre durante I/O y reconexión |
+| Origen, antigüedad y exportación | Evidence + JSON TP3-GUI-1 | exportación Tk y procedencia, consultas con fechas independientes |
+| Demo explícita sin FPGA | demo.py y --demo permanente | conexión, carga, ciclos y ejecución simulados; no certifica placa |
+| Consigna y límites reales | guía y análisis PDF/RTL | [correspondencia y resultados](verificacion_gui.md) |
+
+La [guía](gui.md) incluye controles, dependencias, errores y prueba manual reproducible. La validación física permanece pendiente.

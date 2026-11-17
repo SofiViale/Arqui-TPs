@@ -1,0 +1,2 @@
+PASS: uart_system_tb (69 response frames)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\uart_system_tb.v:57: $finish called at 16243455000 (1ps)

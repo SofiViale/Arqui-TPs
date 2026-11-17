@@ -1,0 +1,37 @@
+test_cli_still_uses_shared_client (test_gui.ClientTests.test_cli_still_uses_shared_client) ... ok
+test_malformed_lengths_errors_and_schema (test_gui.ClientTests.test_malformed_lengths_errors_and_schema) ... ok
+test_memory_chunk_lengths (test_gui.ClientTests.test_memory_chunk_lengths) ... ok
+test_partial_escaped_response_and_sequence (test_gui.ClientTests.test_partial_escaped_response_and_sequence) ... ok
+test_timeout_crc_incomplete_and_recovery_no_retry (test_gui.ClientTests.test_timeout_crc_incomplete_and_recovery_no_retry) ... ok
+test_unplug_short_write_and_cancellation (test_gui.ClientTests.test_unplug_short_write_and_cancellation) ... ok
+test_all_directed_programs_reference_results (test_gui.DemoTests.test_all_directed_programs_reference_results) ... ok
+test_pipeline_demo_cycle_observations (test_gui.DemoTests.test_pipeline_demo_cycle_observations) ... ok
+test_restart_preserve_incomplete_load_and_terminal_reject (test_gui.DemoTests.test_restart_preserve_incomplete_load_and_terminal_reject) ... ok
+test_disassembly_strict_and_immediates (test_gui.ModelTests.test_disassembly_strict_and_immediates) ... ok
+test_memory_bounds (test_gui.ModelTests.test_memory_bounds) ... ok
+test_program_validation_before_begin (test_gui.ModelTests.test_program_validation_before_begin) ... ok
+test_provenance_and_export (test_gui.ModelTests.test_provenance_and_export) ... ok
+test_close_during_incomplete_response (test_gui.WorkerTests.test_close_during_incomplete_response) ... ok
+test_close_failure_does_not_kill_owner_or_block_reconnection (test_gui.WorkerTests.test_close_failure_does_not_kill_owner_or_block_reconnection) ... ok
+test_connect_load_step_run_terminal_memory_and_disconnect (test_gui.WorkerTests.test_connect_load_step_run_terminal_memory_and_disconnect) ... ok
+test_load_lost_ack_not_retried_and_progress_not_commit (test_gui.WorkerTests.test_load_lost_ack_not_retried_and_progress_not_commit) ... ok
+test_serialized_queue_and_single_thread_owner (test_gui.WorkerTests.test_serialized_queue_and_single_thread_owner) ... ok
+test_busy_errors_x0_and_draining_state (test_gui_window.WindowTests.test_busy_errors_x0_and_draining_state) ... ok
+test_navigation_real_callbacks_export_reconnect (test_gui_window.WindowTests.test_navigation_real_callbacks_export_reconnect) ... ok
+test_window_remains_responsive_and_closes_during_io (test_gui_window.WindowTests.test_window_remains_responsive_and_closes_during_io) ... ok
+test_demo_exact (test_host.AssemblerTests.test_demo_exact) ... ok
+test_immediate_boundaries (test_host.AssemblerTests.test_immediate_boundaries) ... ok
+test_labels (test_host.AssemblerTests.test_labels) ... ok
+test_reject (test_host.AssemblerTests.test_reject) ... ok
+test_x31_not_reserved (test_host.AssemblerTests.test_x31_not_reserved) ... ok
+test_all_bytes_escaped (test_host.ProtocolTests.test_all_bytes_escaped) ... ok
+test_bad_and_resync (test_host.ProtocolTests.test_bad_and_resync) ... ok
+test_known_crc (test_host.ProtocolTests.test_known_crc) ... ok
+test_oversize (test_host.ProtocolTests.test_oversize) ... ok
+test_schema_matches_rtl (test_host.ProtocolTests.test_schema_matches_rtl) ... ok
+test_snapshot_all_fields (test_host.ProtocolTests.test_snapshot_all_fields) ... ok
+
+----------------------------------------------------------------------
+Ran 32 tests in 2.796s
+
+OK

@@ -1,0 +1,5 @@
+memory depth=1 PASS (83 checks)
+memory depth=3 PASS (89 checks)
+memory depth=256 PASS (848 checks)
+PASS: memory_tb (1020 checks)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\memory_tb.v:102: $finish called at 3151000 (1ps)

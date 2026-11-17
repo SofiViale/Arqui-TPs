@@ -19,7 +19,8 @@ def snapshot(data):
     if len(data)!=256:raise ValueError(f'snapshot de {len(data)} bytes, se requieren 256')
     header=struct.unpack('<16I',data[:64])
     if header[0]!=SCHEMA:raise ValueError('schema de snapshot incompatible')
-    if header[1]>4 or header[4]>7 or header[6]>15 or header[7]>7:raise ValueError('estado/flags de snapshot inv?lidos')
+    if (header[1]>4 or header[4]>7 or header[6]>15 or header[7]>7 or
+        any(header[i]>1 for i in (8,14,15))):raise ValueError('estado/flags de snapshot inválidos')
     regs=struct.unpack('<32I',data[64:192]);offset=192;stages=[]
     for fields,width in zip(FIELDS,WIDTHS):
         size=(width+7)//8;raw=int.from_bytes(data[offset:offset+size],'little');offset+=size

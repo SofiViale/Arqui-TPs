@@ -1,0 +1,40 @@
+{
+  "at": "2026-11-17T02:35:26.546099+00:00",
+  "local_date": "2026-11-16",
+  "timezone": "America/Buenos_Aires",
+  "python": "3.12.2",
+  "python_tests": {
+    "count": 32,
+    "result": "PASS",
+    "command": "python -m unittest discover -s TP3/scripts -p \"test_*.py\" -v"
+  },
+  "rtl": {
+    "result": "PASS",
+    "benches": 10,
+    "command": "python TP3/scripts/regress.py --simulator icarus",
+    "checks": 52433,
+    "uart_exchanges": 69,
+    "uart_response_bytes": 3582
+  },
+  "desktop_review": "demo GUI: conexión, carga, STEP, RUN/HALT, cinco pestañas, registros/DMEM/log y cierre",
+  "physical_board_tested": false,
+  "ports_enumerated": [
+    "COM1: Puerto de comunicaciones"
+  ],
+  "source_sha256": {
+    "TP3/pc/assembler.py": "f3da48c5334d1cff2c88dc1d5439790b0a105e5e1852f36957948830b4fbfabc",
+    "TP3/pc/client.py": "47e364f069cad9a23d0d38ff09270138110dd79ef37f1c834ef46fb771ad098b",
+    "TP3/pc/demo.py": "5877f755d21ee8bd2e2a7e0194d6a1080bd34a36597a25ad17f2f0ef4e2c7945",
+    "TP3/pc/gui.py": "a50d8f7cb6a57b8f4f39aec27be61eb299992f96ebfc3b7b0e3946b6ee75bdd6",
+    "TP3/pc/model.py": "0ea8c241839fb5d77fc58626f3a84237c53fe82151bb577d03ec42591d98e71d",
+    "TP3/pc/protocol.py": "79ae9437d786b33792c11ef6297260092d4ef25f146f7410f20890fdb9c974fa",
+    "TP3/pc/snapshot.py": "c71bf7bec785a24564df80371f0229dddfac6817f317067dc68e8645e7a8cabe",
+    "TP3/pc/tp3.py": "b4693c94d9f4a09662a709288937b423d9a3bea55727f03c3abb6a7856a9d49a",
+    "TP3/pc/worker.py": "60b83a9294e0f6bd5b2bfbdf25e04eefcc50492afbbb0dc8c599a36848c7a574",
+    "TP3/scripts/test_cases.py": "c9fac6bf449efb22cee1633461a032a7b316d50bf2e678ae525fbf8dc3529cd4",
+    "TP3/scripts/test_gui.py": "83f76cb3ba0eb863a028003a135c5109676a25f8b0b1e681f83f8e33b4d2199a",
+    "TP3/scripts/test_gui_window.py": "4bd2f0ca6794766a362e0b97e12153260c792a7aee79478e987bd01d41929fff",
+    "TP3/scripts/test_host.py": "4dcf043bd165163c9326de8e414e6fe5f7005bb64209e184a0b334a120829983",
+    "TP3/scripts/regress.py": "c7d40ee69dc5d80da5949879d19c78211c8cdd5860e6fada97def06e51e1b003"
+  }
+}

@@ -2,6 +2,8 @@
 
 Fecha de cierre local: **3 de noviembre de 2026**. Se implementaron las etapas 3–6 a nivel de fuentes, herramientas de PC, integración, restricciones y flujo FPGA. La prueba física en Basys 3 sigue pendiente; no se declara realizada.
 
+**Ampliación del 16/11/2026:** se incorporó una GUI, cliente compartido con la CLI y demostración explícita. La [verificación de la GUI](verificacion_gui.md) registra 32 pruebas Python y diez bancos RTL PASS, navegación visual y límites. No modifica RTL ni sustituye la prueba física pendiente. Este informe del 3/11 conserva su fecha y métricas originales.
+
 ## Estado y entorno
 
 Windows, Python 3.13.15 y Vivado/xsim 2026.1, build 6511674. Icarus no estaba en PATH ni existía la copia local citada por las evidencias históricas. La batería acumulada se ejecutó con xvlog/xelab/xsim. El RTL se compila como Verilog; los bancos se compilan como SystemVerilog para habilitar las assertions `$fatal` en xsim.

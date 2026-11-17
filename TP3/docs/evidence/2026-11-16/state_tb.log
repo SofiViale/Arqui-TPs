@@ -1,0 +1,2 @@
+PASS: state_tb (42 checks)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\state_tb.v:42: $finish called at 166000 (1ps)

@@ -1,0 +1,2 @@
+PASS: pipeline_tb (15380 checks, 288 edges, 63 commits, 207 overlap cycles)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\pipeline_tb.v:271: $finish called at 10686320 (1ps)

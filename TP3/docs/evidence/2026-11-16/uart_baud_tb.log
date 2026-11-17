@@ -1,0 +1,2 @@
+PASS: uart_baud_tb (9600 baud, RX break recovery, full STATUS TX CRC)
+C:\Users\Usuario\OneDrive\Documentos\GitHub\Arqui-TPs\TP3\tb\uart_baud_tb.v:35: $finish called at 67430742000 (1ps)
